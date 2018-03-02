@@ -15,7 +15,23 @@ Diagram Make Language for common lisp.  Base on [tkych/donuts](https://github.co
              (comp "Graphviz"))))
 ```
 #### Result 1
-![dml.png](https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml.png) </td>
+![dml.png](https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml.png) 
+
+#### Code 2
+```lisp
+($ (:outfile "class.png")
+   (&& (-genby-* (full-class "OS"
+                            "abstract"
+                            (attributes "- name : String"
+                                        "- born : Date")
+                            (methods "+ play ()"
+                                     "+ work ()"))
+                 (full-class "Linux")
+                 (full-class "Apple")
+                 (full-class "Windows"))))
+```
+#### Result 2
+![dml.png](https://raw.githubusercontent.com/cuichaox/dml/master/demo/class.png)
 
 
 ## TODO
