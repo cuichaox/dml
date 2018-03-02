@@ -19,6 +19,13 @@
                  (full-class "Linux")
                  (full-class "Apple")
                  (full-class "Windows"))))
-
-                                     
-  
+;;Example 3
+($ (:outfile "ucase.png")
+   (& (:rankdir :LR)
+      (->> (actor "user")
+           (ucas "Use Emacs")
+           (ucas "Programing")
+           (ucas "Miss Chengm"))
+      (-dep- "extend"
+             (@n "Programing")
+             (@n "Use Emacs"))))

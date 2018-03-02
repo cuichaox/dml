@@ -30,11 +30,11 @@
   methods)
 
 ;;存放节点的库
-(defvar *node-table* (make-hash-table))
+(defparameter *node-table* (make-hash-table :test 'equal))
 (defun reg-node (name node)
   (setf (gethash name *node-table*) node)
   node)
-(defun get-node (name)
+(defun @n (name)
   (gethash name *node-table*))
 
 ;;创建完整类
@@ -136,3 +136,4 @@
                  (list :label (prototype-label prototype)))))   
     (with-edge (:style "dashed" :arrowhead "open")
       (apply #'--> orgion-node nodes))))
+
