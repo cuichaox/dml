@@ -4,13 +4,8 @@
 Diagram Make Language for common lisp.  Base on [tkych/donuts](https://github.com/tkych/donuts)
 
 ## Examples
-<table>
-  <tr>
-      <th width=50%, bgcolor=grey>Code</th>
-      <th width=50%, bgcolor=grey>Result</th>
-  </tr>
-  <tr>
-      <td>
+
+#### Code 1
 ```lisp
 ($ (:outfile "dml.png")
    (& (:rankdir :LR)
@@ -19,10 +14,9 @@ Diagram Make Language for common lisp.  Base on [tkych/donuts](https://github.co
              (comp "donuts")
              (comp "Graphviz"))))
 ```
-     </td>
-     <td> ![dml.png](https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml.pngq) </td>
-  </tr>
-</table>
+#### Result 1
+![dml.png](https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml.png) </td>
+
 
 ## TODO
 To suport Sequnce language
