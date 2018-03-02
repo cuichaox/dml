@@ -3,11 +3,26 @@
 ## Introduction
 Diagram Make Language for common lisp.  Base on [tkych/donuts](https://github.com/tkych/donuts)
 
-## Current Status
-Just Startup.
-
-## Demo
-等待完成
+## Examples
+<table>
+  <tr>
+      <th width=50%, bgcolor=grey>Code</th>
+      <th width=50%, bgcolor=grey>Result</th>
+  </tr>
+  <tr>
+      <td>
+```lisp
+($ (:outfile "dml.png")
+   (& (:rankdir :LR)
+     (-dep-- "use"
+             (comp "DML")
+             (comp "donuts")
+             (comp "Graphviz"))))
+```
+     </td>
+     <td> ![dml.png](https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml.pngq) </td>
+  </tr>
+</table>
 
 ## TODO
 To suport Sequnce language
