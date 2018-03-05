@@ -86,6 +86,11 @@
   (reg-node name
             (<> name :shape "component")))
 
+;;创建接口
+(defun port(name)
+  (reg-node name
+            (<> name :shape "circle" :size 0.1 :labelloc "b")))
+
 ;;被继承   
 (defun -genby- (node1 node2)
   (-> node1 node2 :dir "back" :arrowtail "empty" :arrowsize 2.0))
@@ -143,3 +148,10 @@
     (with-edge (:style "dashed" :arrowhead "open")
       (apply #'--> orgion-node nodes))))
 
+;;简单连接
+(defun -lin- (node1 node2)
+  (-> node1 node2 :dir "none"))
+
+;;访问接口
+;(defun -reqby-(node1 node2)
+;  (->node1 node2 :dir "back" :arrowtail ""))
