@@ -45,6 +45,12 @@
                                           (multi-rows-label attributes)      "|"
                                           (multi-rows-label *share-methods*)
                                           (multi-rows-label methods)  "}"))))
+;;共享方法工具宏
+(defmacro with-method ((&rest methods) &body body)
+  `(let ((*share-methods*
+          (append *share-methods* ',methods)))
+     (&& ,@body)))
+
 ;;创建简单类
 (defun simp-class (name &optional prototype)
   (reg-node name

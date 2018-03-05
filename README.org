@@ -3,13 +3,13 @@ Diagram Make Language for common lisp.  On the basis of [[https://github.com/tky
 some simple functions are defined as the syntactic sugar for drawing  UML diagram.
 
 * Install
-1. Install donuts via [[https://www.quicklisp.org][Quicklisp]] , in your lisp image:
+Install donuts via [[https://www.quicklisp.org][Quicklisp]] , in your lisp image:
 #+BEGIN_SRC lisp
 (ql:quickload :donuts)
 #+END_SRC
 System 'donuts' will automatically downlaod to local disk.
 
-2. Install dml to '~/quicklisp/local-projects/', in your shell:
+Install dml to '~/quicklisp/local-projects/', in your shell:
 #+BEGIN_SRC shell
 $ cd ~/quicklisp/local-projects/
 $ git clone https://github.com/cuichaox/dml.git
@@ -29,9 +29,9 @@ Evalate expression:
 
 #+BEGIN_SRC lisp
 ($ (:outfile "dml.png")
-   (& (:rankdir :LR)
+   (& (:rankdir :LR)               
      (-dep-- "use"
-             (comp "DML")
+             (comp "DML")          
              (comp "donuts")
              (comp "Graphviz"))))
 #+END_SRC
@@ -43,15 +43,18 @@ Output image:
 Evalate expression:
 #+BEGIN_SRC lisp
 ($ (:outfile "class.png")
-   (&& (-genby-* (full-class "OS"
+   (with-method ("+ play () : Love" "+ work () : Hate")
+      (-genby-* (full-class "OS"
                             "abstract"
                             (attributes "- name : String"
-                                        "- born : Date")
-                            (methods "+ play ()"
-                                     "+ work ()"))
-                 (full-class "Linux")
-                 (full-class "Apple")
-                 (full-class "Windows"))))
+                                        "- born : Date"))
+                               
+                (full-class "Linux")
+                (full-class "Android")
+                (full-class "Apple")
+                (full-class "Windows"))
+      (-dep- "from" (@name "Android")
+                    (@name "Linux"))))
 #+END_SRC
 
 Output Image:

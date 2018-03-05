@@ -10,15 +10,19 @@
 
 ;; Example 2
 ($ (:outfile "class.png")
-   (&& (-genby-* (full-class "OS"
+   (with-method ("+ play () : Love" "+ work () : Hate")
+      (-genby-* (full-class "OS"
                             "abstract"
                             (attributes "- name : String"
-                                        "- born : Date")
-                            (methods "+ play ()"
-                                     "+ work ()"))
-                 (full-class "Linux")
-                 (full-class "Apple")
-                 (full-class "Windows"))))
+                                        "- born : Date"))
+                               
+                (full-class "Linux")
+                (full-class "Android")
+                (full-class "Apple")
+                (full-class "Windows"))
+      (-dep- "from" (@name "Android")
+                    (@name "Linux"))))
+
 ;;Example 3
 ($ (:outfile "ucase.png")
    (& (:rankdir :LR)
