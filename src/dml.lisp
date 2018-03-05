@@ -1,5 +1,10 @@
 
-(in-package :donuts)
+(in-package :cl-user)
+
+(defpackage :dml
+  (:use :cl :donuts))
+
+(in-package :dml)
 
 ;;把列表转换成多行label
 (defun multi-rows-label (labels)

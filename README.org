@@ -38,11 +38,11 @@ See [[https://github.com/cuichaox/dml/blob/master/src/dml.lisp][src/dml.lisp]] f
 
 * Examples
 
-To run Examples, load dml system and change current package to 'donuts'. 
+To run Examples, load dml system and change current package to 'dml'. 
 
 #+BEGIN_SRC lisp
 (ql:quickload :dml)
-(in-package :donuts)
+(in-package :dml)
 #+END_src 
 
 Evalate expression:

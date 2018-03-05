@@ -1,4 +1,4 @@
-(in-package :donuts)
+(in-package :dml)
 
 ;; Example 1
 ($ (:outfile "dml.png")
