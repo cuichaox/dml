@@ -34,7 +34,7 @@
 (defun reg-node (name node)
   (setf (gethash name *node-table*) node)
   node)
-(defun @n (name)
+(defun @name (name)
   (gethash name *node-table*))
 
 ;;创建完整类
@@ -59,8 +59,8 @@
                   (tr (td :border 0
                           (img :src
                                (namestring
-                                (merge-pathnames                                 
-                                 "src/actor.png")))))    
+                                (asdf:system-relative-pathname :dml                                 
+                                  "src/actor.png")))))    
                   (tr (td :border 0 name))))
                 :shape :plaintext)))
 

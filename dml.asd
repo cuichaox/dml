@@ -6,5 +6,5 @@
     :licence     "MIT License"
     :author      "cuic@chianre.com.cn"
     :depends-on  (:donuts)
-    :components  ((:file "src/dml")))
-
+    :components  ((:file "src/dml")
+                  (:static-file "src/actor.png")))

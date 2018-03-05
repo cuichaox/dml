@@ -25,7 +25,8 @@
       (->> (actor "user")
            (ucas "Use Emacs")
            (ucas "Programing")
-           (ucas "Miss Chengm"))
+           (ucas "Play game"))
       (-dep- "extend"
-             (@n "Programing")
-             (@n "Use Emacs"))))
+             (@name "Programing")
+             (@name "Use Emacs"))))
+
