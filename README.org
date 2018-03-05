@@ -18,11 +18,11 @@ System 'dml' will then be loadbale via (ql:quickload :dml).
 
 * Quick Tutor
 
-Symbol reference Table for fllowing examples. See [https://github.com/cuichaox/dml/blob/master/src/dml.lisp][src/dml.lisp] for all symbols:
+Symbol reference Table for fllowing examples. See [[https://github.com/cuichaox/dml/blob/master/src/dml.lisp][src/dml.lisp]] for all symbols:
 
 | name                | type     | descript                                     |
 |---------------------+----------+----------------------------------------------|
-| \$                  | Macro    | Output graph to the viewer                   |
+| $                   | Macro    | Output graph to the viewer                   |
 | &                   | Macro    | To generateg grap with node and edge         |
 | full-class          | Function | Define a class node                          |
 | with-method         | Macro    | Utility to Define share methods for classes. |
