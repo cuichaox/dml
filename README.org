@@ -16,12 +16,30 @@ $ git clone https://github.com/cuichaox/dml.git
 #+END_SRC 
 System 'dml' will then be loadbale via (ql:quickload :dml). 
 
+* Quick Tutor
+
+Symbol reference Table for fllowing examples. See [https://github.com/cuichaox/dml/blob/master/src/dml.lisp][src/dml.lisp] for all symbols:
+
+| name                | type     | descript                                     |
+|---------------------+----------+----------------------------------------------|
+| \$                  | Macro    | Output graph to the viewer                   |
+| &                   | Macro    | To generateg grap with node and edge         |
+| full-class          | Function | Define a class node                          |
+| with-method         | Macro    | Utility to Define share methods for classes. |
+| ucas                | Function | Define use case node                         |
+| @name               | Function | Reference pre-defined node by name           |
+| comp                | Function | Define a componet node                       |
+| actor               | Function | Define a stick-man as actor node             |
+| -dep-,-dep-*,-dep-- | Function | Define dependcy edge: 1-to-1,1-to-n,1-by-1   |
+| -genby-,genby*      | Function | Define generalize edge: 1-to-1,1-ton         |
+
 
 * Examples
-  
-Change current package to 'donuts' 
+
+To run Examples, load dml system and change current package to 'donuts'. 
 
 #+BEGIN_SRC lisp
+(ql:quickload :dml)
 (in-package :donuts)
 #+END_src 
 
@@ -74,6 +92,8 @@ Evalate expression:
              (@name "Programing")
              (@name "Use Emacs"))))
 #+END_SRC lisp
+
+Output Image:
 
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/ucase.png][file:demo/ucase.png]] 
 
