@@ -1,0 +1,21 @@
+* 序列图
+** 设计序列图定义语言
+<object> ::= [!] [<type>.]<object name>
+
+<message> ::=  <a message> | <message group>
+
+<a message> ::= -><object>.<message name>[/<return>] [<message>]
+
+
+
+#+BEGIN_SRC lisp
+;;(:name :type :is-active), 考虑使用紧凑的符合定义语言
+
+object[a-`!][type.][name.].
+
+
+;;同步调用 
+
+
+
+#+END_SRC
