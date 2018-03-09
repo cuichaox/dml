@@ -1,21 +1,13 @@
 * 序列图
 ** 设计序列图定义语言
-<object> ::= [!] [<type>.]<object name>
+ 字符串定义一个node "[*][type.]<name>"
+ 符号定义一个消息 :=>node 同步消息 
+                :->node 异步消息
+                :~>node 自调用消息
+                :=>node/return 同步消息带返回值
+                :!>node 空消息 用来做跳跃
+                ( ) group
+                (loop "guard" () ) 
+                  
+ 基于函数的语言  (make-msg symbols)
 
-<message> ::=  <a message> | <message group>
-
-<a message> ::= -><object>.<message name>[/<return>] [<message>]
-
-
-
-#+BEGIN_SRC lisp
-;;(:name :type :is-active), 考虑使用紧凑的符合定义语言
-
-object[a-`!][type.][name.].
-
-
-;;同步调用 
-
-
-
-#+END_SRC
