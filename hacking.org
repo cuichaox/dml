@@ -1,13 +1,24 @@
 * 序列图
 ** 设计序列图定义语言
- 字符串定义一个node "[*][type.]<name>"
- 符号定义一个消息 :=>node 同步消息 
-                :->node 异步消息
-                :~>node 自调用消息
-                :=>node/return 同步消息带返回值
-                :!>node 空消息 用来做跳跃
-                ( ) group
-                (loop "guard" () ) 
+ - 字符串定义一个<node> 
+   - [*][type.]<name>
+ - 符号定义一个消息<message>
+   - ‘:=>’<node> 同步消息
+   - ‘:->’<node> 异步消息
+  
+- :=>'<node>/<return> 同步消息带返回值
+   - ':#>'<node> 空消息
+
+ - 定义一个消息组<group>
+   - '(' progn  { <message> } ')'
+   - '(' chain  { <message> } '}'
+ - 定义框架消息
+   - '(' opt <guard> <message> ')'
+   - '(' loop <guard> <message> ')' 
+   - '(' if <guard> <message>  <message> ')'
                   
- 基于函数的语言  (make-msg symbols)
+* 引发的思考
+** 跟踪上下文信息的动态变量，如果封装？
+   局部变量使用闭包，动态变量用什么合适呢.
+** 在不断的修改中，修改最多的是职责边界
 

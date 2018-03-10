@@ -1,7 +1,7 @@
 (in-package :cl-user)
 
 (defpackage :dml-seq
-  (:use :cl :cl-cairo2))
+  (:use :cl ))
 
 (in-package :dml-seq)
 
@@ -22,21 +22,25 @@
 ;; 对象
 (defclass obj.act ()
   ((up :accessor up :initarg up :initform 0)
-   (down :accessor down :initarg down :initform nil))
+   (down :accessor down :initarg down :initform MAX-Y))
   (:documentation "Active strip on  life cycle Line."))
 (defclass obj()
   ((name :accessor name :initarg name :initform "")
    (acts :accessor acts :initarg acts :initform nil)
    (xpos :accessor xpos :initarg xpos :initform 0)
-   (begin-ypos :accessor begin-ypos :initarg begin-ypos :initform *current-ypos*)
+   (begin-ypos :accessor begin-ypos :initarg begin-ypos :initform 0)
    (end-ypos :accessor end-ypos :initform MAX-Y))
   (:documentation "Object on cylinders."))
+
 
 ;; 消息
 (defclass msg ()
   ((label :accessor label :initarg label :initform "")
    (begin-ypos :accessor begin-ypos :initarg begin-ypos :initform *current-ypos*))
   (:documentation "message or message group"))
+
+(defmethod initialize-instance :after ((m msg) &key)
+  (incf *current-ypos*))
 
 ;; 消息范围
 (defgeneric up (msg) (:documentation "Get upper ypos in the grid."))
@@ -60,9 +64,11 @@
 
 ;; 调用消息有唯一的左边和唯一的右边
 (defmethod left ((msg call-other))
-  (from-xpos msg))
+  (min (from-xpos msg) (to-xpos msg)))
 (defmethod right ((msg call-other))
-  (to-xpos msg))
+  (max (from-xpos msg) (to-xpos msg)))
+
+
 
 ;; 同步调用
 (defclass syn-call (call-other) ())
@@ -84,6 +90,10 @@
   ((the-xpos :accessor the-xpos :initarg the-xpos :initform *current-xpos*))
   (:documentation "call self."))
 
+(defmethod initialize-instance :after ((m call-self) &key)
+  (incf *current-ypos*))
+
+
 (defmethod down ((msg call-self))
    (1+ (up msg)))
 
@@ -92,6 +102,10 @@
   (the-xpos msg))
 (defmethod right ((msg call-self))
   (the-xpos msg))
+
+;; 单纯的消息组
+(defclass group-msg (multi-msg)
+  ((msgs :accessor msgs :initarg msgs :initform nil)))
 
 ;; 包含多个消息的消息 
 (defclass mutil-msg (msg) ())
@@ -108,12 +122,9 @@
   (apply #'min
          (mapcar #'left (all-msgs mg))))
 (defmethod right ((mg group-msg))
-  (apply #'min
+  (apply #'max
          (mapcar #'right (all-msgs mg))))
 
-;; 单纯的消息组
-(defclass group-msg (multi-msg)
-  ((msgs :accessor msgs :initarg msgs :initform nil)))
 
 ;; 带guard的消息组
 (defclass guard-group (group-msg)
@@ -139,10 +150,44 @@
 
 ;;构建对象
 (defparameter *current-objects* nil)
-(defun make-object (name &key (act nil) (new nil))
-  (princ "wait to hack"))
-;;
+
+;; 找到旧对象
+(defun find-object-by-name (n)
+  (find-if #'(lambda (obj)
+               (string= n (name obj)))
+           *current-objects*))
+
+;; 添加新对象
+(defun intern-object (name &key (act nil) (new nil))
+  (or (find-object-by-name name)
+      (let ((obj
+             (make-instance 'obj
+                            :act (char=  #\! (char name 0)) 
+                            :name name
+                            :xpos (1+ (length *current-objects*))
+                            :begin-yos (if new *current-xpos* 0)))) 
+        (if act (setf (acts obj) (list (make-instance 'obj.act))))
+        (push obj *current-objects*)
+        obj)))
+;; 根据符号得到类名称
+(defun msg-symbol (ch)
+  (cdr (assoc ch '((#\= 'syn-call)
+                   (#\- 'asy-call)
+                   (#\n 'new-call)
+                   (#\d 'del-call)
+                   (#\/ 'ret-call)))))
+;; Parse to ( <class-name>, <object-name>, <message-name>, <return-name> )
 
 
+;; 制作一个消息       
+(defun make-by-director (director-char)
+  (progn (when (symbolp director)
+           (setf director (symbol-name director)))
+         
+         (make-instance (msg-symbol (elt director 0))
+                        :name name
+                        :to-xpos to-x)))
 
+;; 消息定义专用语言
+(defun m-progn (&rest any))
 
