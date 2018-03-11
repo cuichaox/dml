@@ -1,24 +1,46 @@
-* 序列图
+* 想法和实现
 ** 设计序列图定义语言
- - 字符串定义一个<node> 
+ - 字符串定义一个<object> 
    - [*][type.]<name>
  - 符号定义一个消息<message>
-   - ‘:=>’<node> 同步消息
-   - ‘:->’<node> 异步消息
-  
-- :=>'<node>/<return> 同步消息带返回值
-   - ':#>'<node> 空消息
+   - ':=>'<object>.<name> 同步消息
+   - ':->'<object>.<name> 异步消息
+   - ':n>'<object>.<name> 创建消息
+   - ':x>'<object>.<name> 销毁消息 
+   -  :=>'<object>.<name>/<return> 同步消息带返回值
+   
 
  - 定义一个消息组<group>
    - '(' progn  { <message> } ')'
-   - '(' chain  { <message> } '}'
+   - '(' chain  { <message> } '}' 
  - 定义框架消息
    - '(' opt <guard> <message> ')'
    - '(' loop <guard> <message> ')' 
    - '(' if <guard> <message>  <message> ')'
+
+** 问题：定义顺序和放置顺序不一致。
+*** DONE 消除上下文状态
+    + [X] 通过返回组合消息，避免存放消息。
+    + [X] 通过先创建消息，最后在放置消息的办法，可以不用跟着当前Y-POS
+    + [X] 应该引用Obj对象，而不是存放X-POS，避免了跟踪当前的X-POS，也同时实现了Object列的位置可以调整
+
+** 命名问题
+*** TODO 调整文件和包的名称
+*** DONE 使用RANK COLUMN 代替 X，Y的命名
+
+** 如何跟踪最近访问的对象  
+
+** TODO 解决问题：正则表达如何解决没有消息名的问题？
+  fail on: (cl-ppcre:register-groups-bind (a b c d) ("(.)=>([^\./]+)\.?([^/]*)/?(.*)" "*=>asdf/asdf") (list a b c d))       
+  
+  ref to : [[http://www.runoob.com/perl/perl-regular-expressions.html][perl-regex]]
                   
 * 引发的思考
 ** 跟踪上下文信息的动态变量，如果封装？
-   局部变量使用闭包，动态变量用什么合适呢.
+   局部变量使用闭包，动态变量用什么合适呢。
+   放到共享对象里面比较合适。
+
 ** 在不断的修改中，修改最多的是职责边界
 
+** 纯函数方式的DSL参数计算顺序问题，
+   使用宏解决，或调整成，先构建然后再计算
