@@ -7,6 +7,5 @@
     :author      "cuic@chianre.com.cn"
     :depends-on  (:donuts :cl-cairo2 :alexandria)
     :serial t
-    :components  ((:file "src/dml-seq")
-                  (:file "src/dml")
+    :components  ((:file "src/dml")
                   (:static-file "src/actor.png")))
