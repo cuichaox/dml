@@ -1,22 +1,22 @@
 * 想法和实现
 ** 设计序列图定义语言
  - 字符串定义一个<object> 
-   - [*][type.]<name>
+   - [*][type.]<name>|this
  - 符号定义一个消息<message>
    - ':=>'<object>.<name> 同步消息
    - ':->'<object>.<name> 异步消息
-   - ':n>'<object>.<name> 创建消息
-   - ':x>'<object>.<name> 销毁消息 
+   - ':=>'<object>.<new> 创建消息
+   - ':=>'<object>.<del> 销毁消息 
    -  :=>'<object>.<name>/<return> 同步消息带返回值
    
 
  - 定义一个消息组<group>
-   - '(' progn  { <message> } ')'
-   - '(' chain  { <message> } '}' 
+   - '(' m-progn  { <message> } ')'
+   - '(' m-chain  { <message> } '}' 
  - 定义框架消息
    - '(' opt <guard> <message> ')'
-   - '(' loop <guard> <message> ')' 
-   - '(' if <guard> <message>  <message> ')'
+   - '(' m-loop <guard> <message> ')' 
+   - '(' m-if <guard> <message>  <message> ')'
 
 ** 问题：定义顺序和放置顺序不一致。
 *** DONE 消除上下文状态
@@ -34,7 +34,7 @@
   fail on: (cl-ppcre:register-groups-bind (a b c d) ("(.)=>([^\./]+)\.?([^/]*)/?(.*)" "*=>asdf/asdf") (list a b c d))       
   
   ref to : [[http://www.runoob.com/perl/perl-regular-expressions.html][perl-regex]]
-                  
+  
 * 引发的思考
 ** 跟踪上下文信息的动态变量，如果封装？
    局部变量使用闭包，动态变量用什么合适呢。

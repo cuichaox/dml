@@ -43,24 +43,49 @@
 (defclass group-message (multi-message)
   ((messages :accessor messages :initarg messages :initform nil)))
 
-(defclass guard-group (group-message)
-  ((guard :accessor guard :initarg guard :initform "")))
 
-(defclass opt-groups (guard-message)
+(defgeneric push-to (msg grp-msg))
+
+(defmethod push-to ((msg message) (grp-msg group-message))
+  (progn (when msg (push msg (messages grp-msg)))
+         (grp-msg)))
+
+(defgeneric append-to (msg grp-msg)
+  (progn (when msg (alexandria:appendf (messages grp-msg) (list msg)))
+         (grp-msg)))
+
+(defclass guard-group (message)
+  ((guard :accessor guard :initarg guard :initform "")
+   (the-message :accessor the-message :initarg the-message :initform nil)))
+
+
+(defclass opt-guard (guard-message)
   ((name :initform "opt")))
 
-(defclass opt-groups (guard-message)
+(defclass loop-guard (guard-message)
   ((name :initform "loop")))
 
-(defclass alt-groups (multi-message)
+(defclass alt-group (multi-message)
   ((name :initform "alt")
    (ifgroup :accessor ifgroup :initarg ifgroup :initform nil)
    (elsegroup :accessor elsegroup :initarg elsegroup :initform nil)))
 
 (defgeneric all-messages(msg))
 
+(defmethod all-messages(msg call-message)
+  (list call-messages))
+
+(defmethod all-message(msg guard-message)
+  (all-message (the-message guard-message)))
+
+(defmethod all-message ((msg group-message))
+  (apply #'append (mapcar #'all-message  (messages msg))))
+
 (defmethod all-messages ((msg alt-groups))
   (append (ifgroup msg) (elsegroup msg)))
+
+(defmethod to-object ((msg message))
+  (to-object (last all-message msg)))
 
 (defparameter *context-objects* nil)
 (defun find-object-by-name (n)
@@ -68,15 +93,14 @@
                (string= n (name object)))
            *context-objects*))
 
-(defun intern-object (name &optional ( new-by nil))
-  (or (find-object-by-name name)
+(defun intern-object (name)
+  (or (values (find-object-by-name name) t)
       (let* ((is-active (char=  #\! (char name 0)))
              (obj (make-instance 'object
                                  :name (if is-active (subseq name 1) name)
-                                 :is-active is-active 
-                                 :new-message new-by)))                           
+                                 :is-active is-active)))                                 
         (alexandria:appendf *context-objects* (list obj))
-        obj)))
+        (values obj nil))))
 
 (defun message-symbol (ch)
   (cdr (assoc ch '((#\= 'syn-call)
@@ -88,18 +112,54 @@
 (defun parse-message-director (sym)
   (:documentation "return (type-ch object-name call-name return-name)")
   (cl-ppcre:register-groups-bind
-      (type obj-name msg-name ret-name)
-      ("(.)=>([^\./]+)\.?([^/]*)/?(.*)"
+      (type obj-name msg-label ret-label)
+      ("(.)=>([^\./]+)\.([^/]+)(/.*)?"
        (if (stringp sym) sym (symbol-name sym)))      
       (list (message-symbol type-ch)
             obj-name
-            msg-name
-            ret-name)))
+            msg-label
+            ret-label)))
 
-(defun make-by-director (director)
-  (:documentation "return values "))
+(defun make-by-director (from-obj director)
+  (:documentation "return values ")
+  (destructuring-bind (msg-symbol obj-name msg-label ret-label) (parse-message-director director)
+    (multiple-value-bind (to-object existp) (intern-object obj-name) 
+      (let* (call-msg (make-instance msg-symbol
+                                     :label msg-label
+                                     :from-object from-obj
+                                     :to-object to-object))
+            (ret-msg (when ret-label
+                        (make-instance 'ret-call
+                                       :label ret-label
+                                       :from-object to-object
+                                       :to-object from-obj)))
+         (if (typep call-msg 'new-call)
+             (if exitp (error (format nil "The name ~s is used by other." obj-name))
+                 (setf (new-message call-msg) from-obj)))
+         (values(call-msg ret-msg))))))
 
+(defparameter *context-current-object* nil)
+(defun convert-to-message (dir-or-msg)
+  (if (typep dir-or-msg 'message)
+      (valuse dir-or-msg nil)
+      (make-by-director *context-current-object* dir-or-msg)))
 
+(defun m-progn (&rest dir-or-msg-s)
+  (if (null dir-or-msg-s) (make-instance 'group-message)
+      (push-to (convert-to-message (car dir-or-msg-s))
+               (apply 'm-progn (cdr dir-or-msgs)))))
 
-(defun mprogn (&rest any))
+(defun m-chain (&rest dir-or-msg-s)
+  (if (null dir-or-msg-s) (make-instance 'group-message)
+      (multiple-value-bind (call ret) (to-message (car dir-or-msg-s))
+        (append-to ret
+                   (push-to call (let ((*context-current-object* (to-object call)))
+                                   (apply 'm-chain (cdr dir-or-msgs))))))))
+(defun m-opt (guard msg)
+  (make-instance 'opt-guard :gurad guard :the-message msg))
 
+(defun m-loop (guard msg)
+  (make-instance 'loop-guard :gurad guard :the-message msg))
+
+(defun m-if (guard if-msg else-msg)
+  (make-instance 'alt-group :ifmsg if-msg :elsemsg :else-msg))
