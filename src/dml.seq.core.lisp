@@ -1,9 +1,12 @@
-(in-package :cl-user)
 
-(defpackage :dml-seq
-  (:use :cl))
+(uiop:define-package :dml.seq
+    (:mix :cl :cl-cairo2 :alexandria)
+  (:export #:&go
+           #:&in
+           #:&if
+           #:&loop))
 
-(in-package :dml-seq)
+(in-package :dml.seq)
 
 (defgeneric draw (any) (:documentation "Draw the given objectect in current contex."))
 
