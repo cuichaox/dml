@@ -38,7 +38,7 @@
 (defclass self-call(call-message)
   ((to-object :initarg :from-xpos)))
 
-(defclass mutil-message (message) ())
+(defclass multi-message (message) ())
 
 (defclass group-message (multi-message)
   ((messages :accessor messages :initarg :messages :initform nil)))
@@ -87,7 +87,9 @@
   (append (all-messages (if-message msg)) 
           (all-messages (else-message msg))))
 
-(defmethod to-object ((msg message))
+(defgeneric last-objct (msg))
+
+(defmethod last-object ((msg message))
   (to-object (last (all-messages msg))))
 
 (defparameter *context-objects* nil)
@@ -142,37 +144,40 @@
       (values dir-or-msg nil)
       (make-by-director *context-current-object* dir-or-msg)))
 
-(defun m-progn (&rest dir-or-msg-s)
+(defun &go (&rest dir-or-msg-s)
   (if (null dir-or-msg-s) (make-instance 'group-message)
-      (push-to (convert-to-message (car dir-or-msg-s))
-               (apply 'm-progn (cdr dir-or-msg-s)))))
+      (multiple-value-bind (call ret) (convert-to-message (car dir-or-msg-s))
+        (push-to call
+                 (push-to ret
+                          (apply '&go (cdr dir-or-msg-s)))))))
 
-(defun m-chain (&rest dir-or-msg-s)
+(defun &in (&rest dir-or-msg-s)
   (if (null dir-or-msg-s) (make-instance 'group-message)
       (multiple-value-bind (call ret) (convert-to-message (car dir-or-msg-s))
         (append-to ret
-                   (push-to call (let ((*context-current-object* (to-object call)))
-                                   (apply 'm-chain (cdr dir-or-msg-s))))))))
-(defun m-opt (guard msg)
+                   (push-to call (let ((*context-current-object* (last-object call)))
+                                   (apply '&in (cdr dir-or-msg-s))))))))
+(defun &opt (guard msg)
   (make-instance 'opt-guard
-                 :gurad guard
+                 :guard guard
                  :the-message msg))
 
-(defun m-loop (guard msg)
+(defun &loop (guard msg)
   (make-instance 'loop-guard
                  :gurad guard
                  :the-message msg))
 
-(defun m-if (guard if-msg else-msg)
-  (make-instance 'alt-group
-                 :ifmsg (make-instance 'guard-message
-                                       :guard guard
-                                       :the-message if-msg)
-                 :elsemsg (make-instance 'guard-message
-                                         :guard (concatenate 'string "not " guard)
-                                         :the-message else-msg)))
+(defun &if (guard if-msg &optional ( else-msg nil))
+  (if (null else-msg)
+      (&opt guard if-msg)
+      (make-instance 'alt-group
+                     :if-message (make-instance 'guard-message
+                                                :guard guard
+                                                :the-message if-msg)
+                     :else-message (make-instance 'guard-message
+                                                  :guard (concatenate 'string "not " guard)
+                                                  :the-message else-msg))))
 
 ;;原始的调试程序
-(defgeneric debug-print (msg))
-(defmethod debug-print ((msg message)) t)
+
 
