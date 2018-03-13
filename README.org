@@ -1,14 +1,10 @@
 * Introduction
+
 Diagram Make Language for common lisp.  On the basis of [[https://github.com/tkych/donuts]], 
 some simple functions are defined as the syntactic sugar for drawing  UML diagram.
 You can look DML as Domain Specific Language for drawing UML. 
 
 * Install
-Install donuts via [[https://www.quicklisp.org][Quicklisp]] , in your lisp image:
-#+BEGIN_SRC lisp
-(ql:quickload :donuts)
-#+END_SRC
-System 'donuts' will automatically downlaod to local disk.
 
 Install dml to '~/quicklisp/local-projects/', in your shell:
 #+BEGIN_SRC shell
@@ -16,24 +12,37 @@ $ cd ~/quicklisp/local-projects/
 $ git clone https://github.com/cuichaox/dml.git
 #+END_SRC 
 System 'dml' will then be loadbale via (ql:quickload :dml). 
+The systems that dml depended on (donuts, cl-cario2 etc.) will automatically downlaod to local disk at the first call.
 
-* Quick Tutor
+#+BEGIN_SRC lisp
+(ql:quickload :dml)
+#+END_SRC 
 
-Symbol reference Table for fllowing examples. 
-See [[https://github.com/cuichaox/dml/blob/master/src/dml.lisp][src/dml.lisp]] for all symbols:
 
-| Symbol name         | Type     | Description                                  |
-|---------------------+----------+----------------------------------------------|
-| $                   | Macro    | Output graph to the viewer                   |
-| &                   | Macro    | To generateg grap with node and edge         |
-| full-class          | Function | Define a class node                          |
-| with-method         | Macro    | Utility to Define share methods for classes. |
-| ucas                | Function | Define use case node                         |
-| @name               | Function | Reference pre-defined node by name           |
-| comp                | Function | Define a componet node                       |
-| actor               | Function | Define a stick-man as actor node             |
-| -dep-,-dep-*,-dep-- | Function | Define dependcy edge: 1-to-1,1-to-n,1-by-1   |
-| -genby-,genby*      | Function | Define generalize edge: 1-to-1,1-ton         |
+* Quick Start
+
+
+Symbol reference Table.  
+
+| Symbol name           | Type     | Description                                        |
+|-----------------------+----------+----------------------------------------------------|
+| $                     | Macro    | Output graph to the viewer .from [[https://github.com/tkych/donuts][donuts]]            |
+| &                     | Macro    | To generateg grap with node and edge  .from [[https://github.com/tkych/donuts][donuts]] |
+| full-class            | Function | Create a class node whih attributes and methods.   |
+| attributes, methods   | Function | Define attribute/method list for the full-calss    |
+| simp-class            | Function | Return a class node with a simple name in the box. |
+| with-method           | Macro    | Create to define share methods for classes.        |
+| actor                 | Function | Create a stick man as actor.                       |
+| pack                  | Function | Create a package node.                             |
+| ucas                  | Function | Create use case node.                              |
+| comp                  | Function | Create component node                              |
+| @name                 | Function | Reference pre-defined node by name                 |
+| -dep-, -dep-*, -dep-- | Function | Define dependcy edge: 1-to-1, 1-to-n, 1-by-1       |
+| -com-, com-*          | Function | Define composition edge: 1-to-1, 1-to-n            |
+| -agg-, -agg-*         | Function | Define a aggregation edge: 1-to-1, 1-to-n          |
+| -genby-,genby*        | Function | Define generalize edge: 1-to-1, 1-to-n             |
+
+
 
 
 * Examples

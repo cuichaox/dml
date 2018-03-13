@@ -3,15 +3,14 @@
     (:use :cl :donuts)
   (:reexport :donuts)
   (:export #:attributes
-           #:ethods
+           #:methods
            #:@name
            #:full-class
            #:simp-class
            #:actor
            #:ucas
            #:pack
-           #:comp
-           #:port
+           #:comp           
            #:-genby-
            #:-genby-*
            #:-relby-
@@ -22,9 +21,8 @@
            #:-agg-*
            #:-dep-
            #:-dep-*
-           #:-dep--
-           #:-lin-
-           #:-reqby-))
+           #:-dep--))
+           
 
 (in-package :dml.graph)
 
