@@ -8,7 +8,6 @@
 
 (in-package :dml.seq)
 
-(defgeneric draw (any) (:documentation "Draw the given objectect in current contex."))
 
 (defclass object.bar ()
   ((call-message :accessor call-message :initarg :call-message :initform nil)
@@ -59,18 +58,21 @@
   (progn (when msg (alexandria:appendf (messages grp-msg) (list msg)))
          grp-msg))
 
+
 (defclass guard-message (message)
   ((guard :accessor guard :initarg :guard :initform "")
    (the-message :accessor the-message :initarg :the-message :initform nil)))
 
+(defclass frame-message(message)
+  ())
 
-(defclass opt-guard (guard-message)
+(defclass opt-guard (guard-message frame-message)
   ((name :initform "opt")))
 
-(defclass loop-guard (guard-message)
+(defclass loop-guard (gurad-message frame-message)
   ((name :initform "loop")))
 
-(defclass alt-group (multi-message)
+(defclass alt-group ( multi-message frame-message)
   ((name :initform "alt")
    (if-message :accessor if-message :initarg :if-message :initform nil)
    (else-message :accessor else-message :initarg :else-message :initform nil)))
@@ -180,7 +182,4 @@
                      :else-message (make-instance 'guard-message
                                                   :guard (concatenate 'string "not " guard)
                                                   :the-message else-msg))))
-
-;;原始的调试程序
-
 
