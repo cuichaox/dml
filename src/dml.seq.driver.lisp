@@ -5,10 +5,11 @@
 (defconstant MIN-X-MARGIN 12.0)
 (defconstant MIN-Y-MARGIN 24.0)
 
-;;
+;;忽略告警使用的工具函数
 (defun ignore-warning (condition)
   (declare (ignore condition))
   (muffle-warning))
+
 (defmacro igw (&rest forms)
   `(handler-bind ((warning #'ignore-warning))
      ,@forms))
@@ -28,20 +29,36 @@
 
 ;;从调用消息起点开始绘制消息
 (defmethod get-dml-extents ((msg call-message))
-  (let ((label-ext (igw (get-text-extents (label call-message)))))
+  (let ((label-ext (igw (get-text-extents (label msg)))))
     (make-instance 'dml-extents :x-bearing 0.0
                                 :y-bearing (* -1 MIN-Y-MARGIN)
                                 :width (+ (* 2 MIN-X-MARGIN) (text-width label-ext))
                                 :height (+ (* 2 MIN-Y-MARGIN) (text-height label-ext)))))
-;;以左下角为起点绘制文本
-(defun draw-text-on-start-point(text x y)
-  (let (ext (igw (get-text-extents text)))
+;;以制定坐标为起点绘制文本
+(defun draw-text-start-at (text x y)
+  (let ((ext (igw (get-text-extents text))))
     (move-to (- x (text-x-bearing ext))
-             (- y (text-y-bearing ext)))
+             (- y (+ (text-y-bearing ext) (text-height ext))))
     (show-text text)))
 
+;;以制定坐标为终点绘制文本
+(defun draw-text-end-to (text x y)
+  (let ((ext (igw (get-text-extents text))))
+    (move-to (- x (+ (text-x-bearing ext) (text-width ext)))
+             (- y (+ (text-y-bearing ext) (text-height ext))))             
+    (show-text text)))
+
+;;以制定左边为中心绘制文本
+(defun draw-text-center-at (text x y) 
+  (let ((ext (igw (get-text-extents text))))
+    (move-to (- x (+  (text-x-bearing ext) (/ (text-width ext) 2)))
+             (- y (+  (text-y-bearing ext) (/ (text-height ext) 2))))             
+    (show-text text)))
+
+
 ;;绘制直线箭头
-(defun draw-arrow from-x from-y to-x to-y :style)
+(defun draw-call-arrow (from-x from-y to-x &optional (is-asy nil))
+  ())
 
 
 (defmethod draw-dml-element ((msg call-message) x y)
@@ -93,24 +110,3 @@
 
 ;; extend组合规则
 
-;;准备好绘制环境
-
-(defparameter *context*
-  (create-ps-context
-   (concatenate 'string
-                (uiop:native-namestring
-                 (uiop:temporary-directory))
-                "Temp.DML.ps")
-   200 200))
-
-;;测试绘制函数
-(with-png-file ("/tmp/test.png" :rgb24 200 200)
-  (set-source-rgb 0.2 0.2 1)
-  (paint)
-  (translate 100 100)
-  (rotate 1.15)
-  (move-to 0 0)
-  (line-to 60 0)
-  (set-source-rgb 1 1 1)
-  (set-line-width 5)
-  (stroke))
