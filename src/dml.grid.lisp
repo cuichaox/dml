@@ -1,60 +1,50 @@
 
-(uiop:define-package :dml.grid
+(define-package :dml.grid
     (:use :cl)
-  (:export #:fit))
-
+  (:export #:grid
+           #:fit-left           
+           #:fit-right
+           #:fit-up
+           #:fit-down
+           #:get-x-by-index
+           #:get-y-by-index))
 (defclass grid ()
   ((h-lines :initform nil)
    (v-lines :initform nil)))
 
 (defmethod initialize-instance ((g grid) &key hsize vsize)
   (with-slots (h-lines v-lines) g
-    (setf h-lines (make-array hsize :initial-element (cons 0 0)))
-    (setf v-lines (make-array vsize :initial-element (cons 0 0)))))
+    (setf h-lines (make-array hsize))
+    (dotimes (i hsize) (setf (aref h-lines i) (cons 0 0))) 
+    (setf v-lines (make-array vsize))
+    (dotimes (i vsize) (setf (aref v-lines i) (cons 0 0)))))
 
 (defmacro def-fit (name  acc-name slot-name)
-  `(progn (defgeneric ,'name (grid index space))
-          (defmethod ,'name ((g grid) index space)
-            (with-slots (,'slot-name) g
-              (symbol-macrolet ((the-space (,'acc-name ,'slot-name)))
+  `(progn (defgeneric ,name (grid index space))
+          (defmethod ,name ((g grid) index space)
+            (with-slots (,slot-name) g
+              (symbol-macrolet ((the-space (,acc-name (aref ,slot-name index))))
                 (when (> space the-space) (setf the-space space)))))))
 
-
 (def-fit fit-left car v-lines)
+(def-fit fit-right cdr v-lines)
+(def-fit fit-up car h-lines)
+(def-fit fit-down cdr h-lines)
 
+(defun get-all-space (lines index)
+  (reduce #'+ lines
+          :end index
+          :key #'(lambda (line) (+ (car line) (cdr line)))
+          :initial-value (car (elt lines index))))
 
-
-
-(defgeneric fit-left (grid v-line-index space)
-  (:documentation "make sure left space of vline."))
-(defmethod fit-left ((g grid) v-line-index space)
+(defgeneric get-x-by-index (grid v-index))
+(defmethod get-x-by-index ((g grid) v-index)
   (with-slots (v-lines) g
-    (symbol-macrolet ((lp (car (aref v-lines v-line-index))))
-       (when (> space lp) (setf lp space)))))
- 
-(defgeneric fit-right (grid v-line-index space)
-  (:documentation "make sure right space of vline."))
-(defmethod fit-right ((g grid) v-line-index space)
-  (with-slots (v-lines) g
-    (symbol-macrolet ((lp (cdr (aref v-lines v-line-index))))
-       (when (> space lp) (setf lp space)))))
+    (get-all-space v-lines v-index)))
 
-(defgeneric fit-up (grid h-line-index space)
-  (:documentation "make sure up space of vline."))
-(defmethod fit-up ((g grid) h-line-index space)
+(defmethod get-y-by-index ((g grid) h-index)
   (with-slots (h-lines) g
-    (symbol-macrolet ((lp (car (aref h-lines h-line-index))))
-       (when (> space lp) (setf lp space)))))
+    (get-all-space h-lines h-index)))
 
 
-(defgeneric fit-down (grid h-line-index space)
-  (:documentation "make sure down space of vline."))
-
-(defmethod fit-up ((g grid) h-line-index space)
-  (with-slots (h-lines) g
-    (symbol-macrolet ((lp (cdr (aref h-lines h-line-index))))
-       (when (> space lp) (setf lp space)))))
-
-(defgeneric get-x-by-hi (args)
-   (:documentation "doc"))
 

@@ -1,6 +1,6 @@
 
 (uiop:define-package :dml.seq
-    (:mix :cl :cl-cairo2 :alexandria)
+    (:mix :cl :alexandria)
   (:export #:&go
            #:&in
            #:&if

@@ -1,4 +1,20 @@
 
+(defpackage   :dml.seq.engine
+  (:nicknames :dml.seq.cario)
+  (:use       :cl :cl-cario2)
+  (:import-from dml.seq
+                #:object.bar
+                #:object
+                #:message
+                #:call-message
+                #:syn-call
+                #:asy-call
+                #:ret-call
+                #)
+  (:export    :draw-message)
+  (:documentation "doc"))
+
+
 (in-package :dml.seq)
 
 ;;参数
