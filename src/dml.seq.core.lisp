@@ -23,7 +23,7 @@
            #:opt-guard
            #:loop-guard
            #:alt-group
-           #:call-to-right-p
+           #:*context-object*
            #:&go
            #:&in
            #:&if
@@ -204,10 +204,5 @@
                      :else-message (make-instance 'guard-message
                                                   :guard (concatenate 'string "not " guard)
                                                   :the-message else-msg))))
-(defun get-object-index (obj)
-  (position obj *context-objects*))
 
-(defun call-to-right-p (call)
-  (> (get-object-index (to-object call))
-     (get-object-index (from-object call))))
 

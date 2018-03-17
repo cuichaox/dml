@@ -2,11 +2,14 @@
 (uiop:define-package :dml.seq.engine
     (:mix #:cl-cairo2
           #:dml.seq.core
+          #:dml.grid
           #:cl)
     (:export    #:draw-message)
     (:documentation "doc"))
 
 (in-package :dml.seq.engine)
+
+(defparameter *context-grid* nil)
 
 ;;参数
 (defconstant MIN-X-MARGIN 12.0)
@@ -21,23 +24,14 @@
   `(handler-bind ((warning #'ignore-warning))
      ,@forms))
 
-;;不变量形式存在的对象范围
-(defclass dml-extents ()
-  ((x-bearing :reader x-bearing :initarg :x-bearing :initform 0.0)
-   (y-bearing :reader y-bearing :initarg :y-bearing :initform 0.0)
-   (label-end :reader width :initarg :width :initform 0.0)
-   (height :reader height :initarg :height :initform 0.0)))
+(defgeneric fit-to-grid (element))
 
-
-(defgeneric fit (element)
-  (:documentation "get dml extents in current contex"))
-
-(defgeneric draw-dml-element (element x y)
-  (:documentation "Draw the given objectect in current contex."))
-
+(defgeneric draw-dml-element (element))
+  
 ;;对象的大小
-(defmethod get-dml-extents ((msg call-message))
-  (let ((label-ext (igw (get-text-extents (label msg)))))
+(defmethod fit-to-grid ((msg call-message))
+  (let* ((label-ext (igw (get-text-extents (label msg)))))
+    
     (make-instance 'dml-extents :x-bearing (if (call-to-right-p msg) 0.0
                                                (* -1 (+ (* 2 MIN-X-MARGIN)
                                                         (text-width label-ext))))
@@ -67,7 +61,7 @@
              (- y (+  (text-y-bearing ext) (/ (text-height ext) 2))))             
     (show-text text)))
 
-;; look complex as point
+;;绘制虚线
 (defun draw-dash-line (fx fy tx ty)
   (let* ((fp (complex fx fy))
          (tp (complex tx ty))
@@ -85,6 +79,7 @@
        do (line-to (realpart next-pos) (imagpart next-pos)))
     (stroke)))
 
+;;绘制箭头
 (defun draw-arraw-cap (fx fy tx ty &key (left t) (right t))
   (let ((w 20) (h 5))
     (progn (save)
@@ -139,7 +134,30 @@
   ())
 
 
-;;最后要实现的函数
-(defun make-sequnce-dia (outfile msg)
-  (let ()))
+
+(defparameter *context-messages nil)
+
+(defun get-call-index (msg)
+ (position msg *context-message*))
+
+(defun get-object-index (obj)
+  (position obj *context-objects*))
+
+(defun call-to-right-p (call)
+  (> (get-object-index (to-object call))
+     (get-object-index (from-object call))))
+
+(defun dock-object-to-grid()
+  ())
+
+(defun make-grid()
+  (let* ((calls (all-call-message *context-message*))
+         (grid (make-instance 'grid :hsize (length calls)
+                                    :vsize (length *context-objects))))
+    ()))    
+         
+
+;;最后要实现的工具宏
+(defun make-sequnce-diagram (outfile msg)
+  (let* ((*context-message*  msg))))
 
