@@ -1,5 +1,7 @@
 ;;准备好绘制环境
 
+(use-package :uiop)
+
 (defparameter *context*
   (create-ps-context
    (concatenate 'string
@@ -16,7 +18,6 @@
   (paint)
   (set-font-size 100)
   (set-source-rgb 1 1 1)
-  (draw-text-center-at "hello" 0 0)  
-  (line-to 60 90)  
   (set-line-width 5)
+  (dash-line 0 0 200 200)
   (stroke))

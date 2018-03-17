@@ -1,20 +1,42 @@
 
-(uiop:define-package :dml.seq
-    (:mix :cl :alexandria)
-  (:export #:&go
+(uiop:define-package :dml.seq.core
+    (:mix :dml.grid :cl :alexandria)
+  (:export #:object
+           #:name
+           #:is-active           
+           #:message
+           #:label
+           #:call-message
+           #:syn-call
+           #:asy-call
+           #:ret-call
+           #:new-call
+           #:del-call
+           #:self-call
+           #:multi-message
+           #:all-call-message
+           #:group-message
+           #:guard-message
+           #:guard
+           #:frame-message
+           #:the-message
+           #:opt-guard
+           #:loop-guard
+           #:alt-group
+           #:call-to-right-p
+           #:&go
            #:&in
            #:&if
            #:&loop))
 
-(in-package :dml.seq)
-
+(in-package :dml.seq.core)
 
 (defclass object.bar ()
   ((call-message :accessor call-message :initarg :call-message :initform nil)
    (ret-message :accessor ret-message :initarg :ret-message :initform nil))
   (:documentation "Active strip on  life cycle Line."))
 
-(defclass object()
+(defclass object ()
   ((name :accessor name :initarg :name :initform "")
    (is-active :accessor is-active :initarg :is-active :initform nil)
    (bars :accessor bars :initarg :bars :initform nil)
@@ -37,7 +59,7 @@
 (defclass new-call (call-message) ())
 (defclass del-call (call-message) ())
 
-(defclass self-call(call-message)
+(defclass self-call (call-message)
   ((to-object :initarg :from-xpos)))
 
 (defclass multi-message (message) ())
@@ -63,7 +85,7 @@
   ((guard :accessor guard :initarg :guard :initform "")
    (the-message :accessor the-message :initarg :the-message :initform nil)))
 
-(defclass frame-message(message)
+(defclass frame-message (message)
   ())
 
 (defclass opt-guard (guard-message frame-message)
@@ -77,25 +99,25 @@
    (if-message :accessor if-message :initarg :if-message :initform nil)
    (else-message :accessor else-message :initarg :else-message :initform nil)))
 
-(defgeneric all-messages (msg))
+(defgeneric all-call-messages (msg))
 
-(defmethod all-messages ((msg call-message))
+(defmethod all-call-messages ((msg call-message))
   (list msg))
 
-(defmethod all-messages ((msg guard-message))
-  (all-messages (the-message msg)))
+(defmethod all-all-messages ((msg guard-message))
+  (all-call-messages (the-message msg)))
 
-(defmethod all-messages ((msg group-message))
-  (apply #'append (mapcar #'all-messages  (messages msg))))
+(defmethod all-call-messages ((msg group-message))
+  (apply #'append (mapcar #'all-call-messages  (messages msg))))
 
-(defmethod all-messages ((msg alt-group))
-  (append (all-messages (if-message msg)) 
-          (all-messages (else-message msg))))
+(defmethod all-call-messages ((msg alt-group))
+  (append (all-call-messages (if-message msg)) 
+          (all-call-messages (else-message msg))))
 
 (defgeneric last-objct (msg))
 
 (defmethod last-object ((msg message))
-  (to-object (last (all-messages msg))))
+  (to-object (last (all-call-messages msg))))
 
 (defparameter *context-objects* nil)
 (defun find-object-by-name (n)
@@ -182,4 +204,10 @@
                      :else-message (make-instance 'guard-message
                                                   :guard (concatenate 'string "not " guard)
                                                   :the-message else-msg))))
+(defun get-object-index (obj)
+  (position obj *context-objects*))
+
+(defun call-to-right-p (call)
+  (> (get-object-index (to-object call))
+     (get-object-index (from-object call))))
 

@@ -8,9 +8,11 @@
     :depends-on  (:donuts :cl-cairo2 :alexandria :cl-ppcre)
     :components  ((:file "src/dml.graph")
                   (:static-file "src/actor.png")
-                  ;(:file "src/dml.seq.core")
-                  ;(:file "src/dml.seq.driver"
-                  ;      :depends-on ("src/dml.seq.core"))
+                  (:file "src/dml.grid")
+                  (:file "src/dml.seq.core" 
+                         :depends-on ("src/dml.grid"))
+                  (:file "src/dml.seq.engine"
+                         :depends-on ("src/dml.seq.core"))
                   (:file "src/dml"
                          :depends-on ("src/dml.graph"))))
                  
