@@ -2,7 +2,7 @@
 (uiop:define-package :dml.seq.engine
     (:mix #:cl-cairo2
           #:dml.seq.core
-          #:dml.grid
+          #:dml.seq.grid
           #:cl)
     (:export    #:draw-message)
     (:documentation "doc"))
@@ -13,7 +13,8 @@
 
 ;;参数
 (defconstant MIN-X-MARGIN 12.0)
-(defconstant MIN-Y-MARGI t [doc])value [doc]N 24.0
+(defconstant INNER-MARGIN 6.0)
+(defconstant MIN-Y-MARGIN 24.0)
 
 ;;忽略告警使用的工具函数
 (defun ignore-warning (condition)
@@ -24,11 +25,25 @@
   `(handler-bind ((warning #'ignore-warning))
      ,@forms))
 
-(defgeneric fit-to-grid (element))
 
+(defun get-call-index (msg)
+ (position msg *context-message*))
+
+(defun get-object-index (obj)
+  (position obj *context-objects*))
+
+(defun call-to-right-p (call)
+  (> (get-object-index (to-object call))
+     (get-object-index (from-object call))))
+
+(defgeneric fit-to-grid (element))
 (defgeneric draw-dml-element (element))
   
 ;;对象的大小
+(defmethod fit-to-grid ((obj object))
+  (let* ((name-ext (igw (get-text-extents (name obj)))))         
+    (fit-left *context-grid* ())))    
+
 (defmethod fit-to-grid ((msg call-message))
   (let* ((label-ext (igw (get-text-extents (label msg)))))
     
@@ -91,38 +106,38 @@
            (stroke)
            (restore))))
 
-(defmethod draw-dml-element ((msg call-message) x y)
+(defmethod draw-dml-element ((msg call-message))
   ())
 
-(defmethod draw-dml-element  ((msg self-call) x y)
+(defmethod draw-dml-element  ((msg self-call))
   ())
 
 ;;为特定消息类型指定绘制属性
-(defmethod draw-dml-element :around ((msg syn-call) x y)
+(defmethod draw-dml-element :around ((msg syn-call))
   ())
-(defmethod draw-dml-element :around ((msg asy-call) x y)
+(defmethod draw-dml-element :around ((msg asy-call))
   ())
-(defmethod draw-dml-element :around ((msg ret-call) x y)
+(defmethod draw-dml-element :around ((msg ret-call))
   ())
-(defmethod draw-dml-element :around ((msg new-call) x y)
+(defmethod draw-dml-element :around ((msg new-call))
   ())
-(defmethod draw-dml-element :around ((msg del-call) x y)
+(defmethod draw-dml-element :around ((msg del-call))
   ())
 
 ;;为特定消息补充绘制
-(defmethod draw-dml-element :after ((msg del-call) x y)
+(defmethod draw-dml-element :after ((msg del-call))
   ())
 
 ;;从第一个消息的起点绘制消息组
 (defmethod get-dml-extents ((msg group-message))
   ())
-(defmethod draw-dml-element ((msg group-message) x y)
+(defmethod draw-dml-element ((msg group-message))
   ())
 
 ;;绘制guard和消息
 (defmethod get-dml-extents ((msg guard-message))
   ())
-(defmethod draw-dml-element ((msg guard-message) x y)
+(defmethod draw-dml-element ((msg guard-message))
   ())
 
 ;;给分支循环绘制消息边框 应该用继承而不是组合
@@ -130,12 +145,10 @@
 (defmethod get-dml-extents ((msg frame-message))
   ())
 
-(defmethod draw-dml-element  ((msg frame-message) x y)
+(defmethod draw-dml-element  ((msg frame-message))
   ())
 
-
-
-(defparameter *context-messages nil)
+(defparameter *context-message* nil)
 
 (defun get-call-index (msg)
  (position msg *context-message*))
@@ -147,17 +160,24 @@
   (> (get-object-index (to-object call))
      (get-object-index (from-object call))))
 
-(defun dock-object-to-grid()
+(defun dock-objects-to-grid()
   ())
 
-(defun make-grid()
-  (let* ((calls (all-call-message *context-message*))
-         (grid (make-instance 'grid :hsize (length calls)
-                                    :vsize (length *context-objects))))
-    ()))    
-         
+(defun dock-messages-to-grid()
+  ())
+
+(defun dock-all-to-grid()
+  (progn (dock-objects-to-grid)    
+         (dock-message-to-grid)))
+
+(defparameter *contex* nil)
 
 ;;最后要实现的工具宏
 (defun make-sequnce-diagram (outfile msg)
-  (let* ((*context-message*  msg))))
+  (let* ((*context-message*  msg)
+         (*context-grid* (make-instance 'grid
+                                        :hsize)))
+    (setf *context* (create-ps-context "/tmp/for-prepare" 600 200))
+    (dock-all-to-grid)))
+         
 

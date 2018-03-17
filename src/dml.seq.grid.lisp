@@ -1,6 +1,6 @@
 
-(define-package :dml.grid
-    (:use :cl)
+(defpackage :dml.seq.grid
+  (:use :cl)
   (:export #:grid
            #:fit-left           
            #:fit-right
@@ -8,6 +8,8 @@
            #:fit-down
            #:get-x-by-index
            #:get-y-by-index))
+
+(in-package :dml.seq.grid)
 
 (defclass grid ()
   ((h-lines :initform nil)

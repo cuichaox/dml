@@ -1,6 +1,6 @@
 
 (uiop:define-package :dml.seq.core
-    (:mix :dml.grid :cl :alexandria)
+    (:mix :cl :alexandria)
   (:export #:object
            #:name
            #:is-active           
@@ -23,7 +23,7 @@
            #:opt-guard
            #:loop-guard
            #:alt-group
-           #:*context-object*
+           #:*context-objects*
            #:&go
            #:&in
            #:&if
@@ -120,6 +120,7 @@
   (to-object (last (all-call-messages msg))))
 
 (defparameter *context-objects* nil)
+
 (defun find-object-by-name (n)
   (find-if #'(lambda (object)
                (string= n (name object)))
