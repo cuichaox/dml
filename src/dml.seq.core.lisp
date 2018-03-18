@@ -2,11 +2,15 @@
 (uiop:define-package :dml.seq.core
     (:mix :cl :alexandria)
   (:export #:object
+           #:new-message
+           #:end-message
            #:name
            #:is-active           
-           #:message
+           #:message           
            #:label
            #:call-message
+           #:from-object
+           #:to-object
            #:syn-call
            #:asy-call
            #:ret-call
@@ -14,7 +18,7 @@
            #:del-call
            #:self-call
            #:multi-message
-           #:all-call-message
+           #:all-call-messages
            #:group-message
            #:guard-message
            #:guard
@@ -117,7 +121,7 @@
 (defgeneric last-objct (msg))
 
 (defmethod last-object ((msg message))
-  (to-object (last (all-call-messages msg))))
+  (to-object (car (last (all-call-messages msg)))))
 
 (defparameter *context-objects* nil)
 

@@ -20,4 +20,7 @@
   (set-source-rgb 1 1 1)
   (set-line-width 5)
   (dash-line 0 0 200 200)
-  (stroke))
+  (stroke)
+
+ ;; test in repl
+ (make-sequnce-diagram "test" (&in "==>obj1.msg1/ok" "==>obj2.msg2/ok" "==>obj3.msg3/ok")))
