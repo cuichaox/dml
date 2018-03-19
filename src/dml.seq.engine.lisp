@@ -1,4 +1,3 @@
-
 (uiop:define-package :dml.seq.engine
     (:mix #:cl-cairo2
           #:dml.seq.core
@@ -10,11 +9,12 @@
 (in-package :dml.seq.engine)
 
 (defparameter *context-grid* nil)
+(defparameter *context-message* nil)
 
 ;;参数
-(defconstant MIN-X-MARGIN 24.0)
+(defconstant MIN-X-MARGIN 12.0)
 (defconstant INNER-MARGIN 12.0)
-(defconstant MIN-Y-MARGIN 48.0)
+(defconstant MIN-Y-MARGIN 24.0)
 
 ;;忽略告警使用的工具函数
 (defun ignore-warning (condition)
@@ -24,7 +24,6 @@
 (defmacro igw (&rest forms)
   `(handler-bind ((warning #'ignore-warning))
      ,@forms))
-
 
 (defun get-call-v-index (msg)
  (+ 1 (position msg (all-call-messages *context-message*))))
@@ -77,7 +76,6 @@
     (fit-up *context-grid*
             (get-call-v-index msg)
             height)))
-
                      
 (defmethod fit-to-grid ((msg message))
   (loop
@@ -120,8 +118,7 @@
     (loop
        for cur-len from 0.0 to total-len by step-len       
        for cur-pos = (+ fp (* cur-len dir))
-       for next-pos = (+ cur-pos (* 4.0 dir))
-       do (print (list cur-pos next-pos))
+       for next-pos = (+ cur-pos (* 4.0 dir))       
        do (move-to (realpart cur-pos)
                    (imagpart cur-pos))       
        do (line-to (realpart next-pos) (imagpart next-pos)))
@@ -143,8 +140,11 @@
   (let* ((hline (get-object-h-index obj))
          (hx (get-x-by-index *context-grid* hline))
          (vline (get-object-v-index obj))
-         (hy (get-y-by-index *context-grid* vline)))
-    (progn (draw-text-center-at (name obj) hx hy))))         
+         (hy (get-y-by-index *context-grid* vline))
+         (ext (igw (get-text-extents (name obj)))))
+    (progn (draw-text-center-at (name obj) hx hy)
+           (draw-dash-line hx (+ hy (/ (text-height ext) 2))
+                           hx (get-height *context-grid*)))))
 
 (defmethod draw-dml-element ((msg call-message))
   (let* ((from-obj (from-object msg))
@@ -175,22 +175,17 @@
            (stroke)
            (draw-arraw-cap x2 y2 x3 y3)
            (draw-text-start-at (label msg) from-x from-y))))
-                     
 
 (defmethod draw-dml-element ((msg message))
   (loop
      for call in (all-call-messages msg)
      do (draw-dml-element call)))
 
-(defparameter *context-message* nil)
-
 (defun dock-all-to-grid()
   (progn
     (loop
        for obj in *context-objects*)
     (fit-to-grid *context-message*)))
-
-(defparameter *contex* nil)
 
 ;;最后要实现的工具宏
 (defun make-sequnce-diagram (outfile msg)
@@ -199,17 +194,16 @@
           (make-instance
            'grid
            :hsize (length *context-objects*)
-           :vsize (+ 1 (length (all-call-messages *context-message*))))))
-     (setf *context* (create-ps-context (concatenate 'string
+           :vsize (+ 1 (length (all-call-messages *context-message*)))))
+         (*context* (create-ps-context (concatenate 'string
                                                     "/tmp/"
                                                     outfile
                                                     ".ps")
-                                       600 600))
+                                       600 600)))
      (dock-all-to-grid)
      (loop
         for obj in *context-objects*
         do (draw-dml-element obj))
      (draw-dml-element msg)
      (destroy *context*)))
-         
 
