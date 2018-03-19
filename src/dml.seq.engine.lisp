@@ -12,9 +12,9 @@
 (defparameter *context-message* nil)
 
 ;;参数
-(defconstant MIN-X-MARGIN 12.0)
-(defconstant INNER-MARGIN 12.0)
-(defconstant MIN-Y-MARGIN 24.0)
+(defconstant +min-x-margin+ 12.0)
+(defconstant +inner-margin+ 12.0)
+(defconstant +min-y-margin+ 24.0)
 
 ;;忽略告警使用的工具函数
 (defun ignore-warning (condition)
@@ -49,8 +49,8 @@
          (h-index (get-object-h-index obj))
          (new-by (new-message obj))
          (v-index (if new-by (get-call-v-index new-by) 0))
-         (half-hspace (+ INNER-MARGIN MIN-X-MARGIN (/ (text-width name-ext) 2)))
-         (half-vspace (+ INNER-MARGIN MIN-Y-MARGIN (/ (text-height name-ext) 2))))
+         (half-hspace (+ +inner-margin+ +min-x-margin+ (/ (text-width name-ext) 2)))
+         (half-vspace (+ +inner-margin+ +min-y-margin+ (/ (text-height name-ext) 2))))
     (fit-left *context-grid* h-index half-hspace)
     (fit-right *context-grid* h-index half-hspace)
     (fit-up *context-grid* v-index half-vspace)
@@ -58,9 +58,9 @@
 
 (defmethod fit-to-grid ((msg call-message))
   (let* ((label-ext (igw (get-text-extents (label msg))))
-         (width (+ (* 2 MIN-X-MARGIN)
+         (width (+ (* 2 +min-x-margin+)
                    (text-width label-ext)))
-         (height (+ (* 2 MIN-Y-MARGIN)
+         (height (+ (* 2 +min-y-margin+)
                     (text-height label-ext))))
     (if (or (null (from-object msg)))            
         (fit-left *context-grid*
@@ -102,10 +102,10 @@
     (move-to (- x (+  (text-x-bearing ext) (/ (text-width ext) 2)))
              (- y (+  (text-y-bearing ext) (/ (text-height ext) 2))))             
     (show-text text)
-    (when box (rectangle (- x INNER-MARGIN (/ (text-width ext) 2))
-                         (- y INNER-MARGIN (/ (text-width ext) 2))
-                         (+ (* 2 INNER-MARGIN) (text-width ext))
-                         (+ (* 2 INNER-MARGIN) (text-height ext)))
+    (when box (rectangle (- x +inner-margin+ (/ (text-width ext) 2))
+                         (- y +inner-margin+ (/ (text-height ext) 2))
+                         (+ (* 2 +inner-margin+) (text-width ext))
+                         (+ (* 2 +inner-margin+) (text-height ext)))
           (stroke))))
 ;;绘制虚线                  
 (defun draw-dash-line (fx fy tx ty)
@@ -143,14 +143,14 @@
          (hy (get-y-by-index *context-grid* vline))
          (ext (igw (get-text-extents (name obj)))))
     (progn (draw-text-center-at (name obj) hx hy)
-           (draw-dash-line hx (+ hy (/ (text-height ext) 2))
+           (draw-dash-line hx (+ hy +inner-margin+  (/ (text-height ext) 2))
                            hx (get-height *context-grid*)))))
 
 (defmethod draw-dml-element ((msg call-message))
   (let* ((from-obj (from-object msg))
          (to-obj (to-object msg))
          (from-x (if (null from-obj)
-                     (+  MIN-X-MARGIN (get-x-by-index *context-grid* (- (get-object-h-index from-obj) 1)))                        
+                     (+  +min-x-margin+ (get-x-by-index *context-grid* (- (get-object-h-index from-obj) 1)))                        
                      (get-x-by-index *context-grid* (get-object-h-index from-obj))))
          (from-y (get-y-by-index *context-grid* (get-call-v-index msg)))         
          (to-x (get-x-by-index *context-grid* (get-object-h-index to-obj)))
@@ -167,8 +167,8 @@
   (let* ((from-obj (from-object msg))
          (from-x (get-x-by-index *context-grid* (get-object-h-index from-obj)))
          (from-y (get-y-by-index *context-grid* (get-call-v-index msg)))
-         (x1 (+ from-x (* 2 MIN-X-MARGIN)))  (y1 from-y)
-         (x2 x1)  (y2 (+ y1 MIN-Y-MARGIN))
+         (x1 (+ from-x (* 2 +min-x-margin+)))  (y1 from-y)
+         (x2 x1)  (y2 (+ y1 +min-y-margin+))
          (x3 from-x) (y3 (+ from-y 5)))
     (progn (move-to from-x from-y)
            (curve-to  x1 y1 x2 y2 x3 y3)
@@ -184,26 +184,34 @@
 (defun dock-all-to-grid()
   (progn
     (loop
-       for obj in *context-objects*)
+       for obj in *context-objects*
+       do  (fit-to-grid obj))
     (fit-to-grid *context-message*)))
+    
 
 ;;最后要实现的工具宏
 (defun make-sequnce-diagram (outfile msg)
   (let* ((*context-message*  msg)
+         (grid-hsize (length *context-objects*))
+         (grid-vsize (+ 1 (length (all-call-messages *context-message*))))
          (*context-grid*
           (make-instance
            'grid
-           :hsize (length *context-objects*)
-           :vsize (+ 1 (length (all-call-messages *context-message*)))))
-         (*context* (create-ps-context (concatenate 'string
-                                                    "/tmp/"
-                                                    outfile
-                                                    ".ps")
-                                       600 600)))
-     (dock-all-to-grid)
-     (loop
-        for obj in *context-objects*
-        do (draw-dml-element obj))
-     (draw-dml-element msg)
-     (destroy *context*)))
+           :hsize grid-hsize
+           :vsize grid-vsize))
+         (*context*
+          (create-ps-context
+           (concatenate 'string "/tmp/"  outfile ".ps")  600 600)))
+    (fit-down *context-grid* (- grid-vsize 1) +min-y-margin+)
+    (set-font-size 20)
+    (set-line-width 1.0)    
+    (dock-all-to-grid)
+    (loop
+       for obj in *context-objects*
+       do (draw-dml-element obj))
+    (rectangle 0 0
+               (get-width *context-grid*) (get-height *context-grid*))
+    (draw-dml-element msg)
+    (destroy *context*)))
+    
 
