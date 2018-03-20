@@ -4,6 +4,7 @@
   (:export #:object
            #:new-message
            #:end-message
+           #:callers
            #:name
            #:is-active           
            #:message           
@@ -43,7 +44,7 @@
 (defclass object ()
   ((name :accessor name :initarg :name :initform "")
    (is-active :accessor is-active :initarg :is-active :initform nil)
-   (bars :accessor bars :initarg :bars :initform nil)
+   (callers :accessor callers :initarg :callers :initform nil)
    (new-message :accessor new-message :initarg :new-message :initform nil)
    (end-message :accessor end-message :initarg :end-message :initform nil))
   (:documentation "Objectect on cylinders."))
@@ -179,16 +180,24 @@
 (defun &go (&rest dir-or-msg-s)
   (if (null dir-or-msg-s) (make-instance 'group-message)
       (multiple-value-bind (call ret) (convert-to-message (car dir-or-msg-s))
+        (appendf (callers (to-object call))
+                 (list (cons call ret)))
         (push-to call
                  (push-to ret
                           (apply '&go (cdr dir-or-msg-s)))))))
+        
 
 (defun &in (&rest dir-or-msg-s)
   (if (null dir-or-msg-s) (make-instance 'group-message)
       (multiple-value-bind (call ret) (convert-to-message (car dir-or-msg-s))
+        (appendf  (callers (to-object call))
+                  (list (cons call ret)))
         (append-to ret
-                   (push-to call (let ((*context-current-object* (last-object call)))
-                                   (apply '&in (cdr dir-or-msg-s))))))))
+                   (push-to call
+                            (let ((*context-current-object* (last-object call)))
+                              (apply '&in (cdr dir-or-msg-s))))))))
+        
+
 (defun &opt (guard msg)
   (make-instance 'opt-guard
                  :guard guard

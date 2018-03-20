@@ -15,6 +15,7 @@
 (defconstant +min-x-margin+ 12.0)
 (defconstant +inner-margin+ 12.0)
 (defconstant +min-y-margin+ 24.0)
+(defconstant +half-bar-width+ 4.0)
 
 ;;忽略告警使用的工具函数
 (defun ignore-warning (condition)
@@ -26,7 +27,31 @@
      ,@forms))
 
 (defun get-call-v-index (msg)
- (+ 1 (position msg (all-call-messages *context-message*))))
+  (+ 1 (position msg (all-call-messages *context-message*))))
+
+(defun get-caller-phases (obj)  
+ (let ((ret nil))
+   (reverse (dolist (caller (callers obj) ret)
+              (push (cons (get-call-v-index (car caller))
+                          (get-call-v-index (cdr caller)))
+                    ret)))))
+
+(defun compress-caller-phases (obj)
+  (let ((phases (get-caller-phases obj)))
+   (if (or (null phases) (null (cdr phases)))
+       phases
+       (if (< (cdar phases) (caadr phases))
+           (cons (car phases) (compress-active-phases (cdr phases)))
+           (progn
+             (setf (caadr phases) (caar phases))
+             (compress-active-phases (cdr phases)))))))
+
+(defun get-active-bars (obj)
+ (let ((ret nil))
+   (reverse (dolist (bar (compress-caller-phases obj) ret)
+              (push (cons (get-y-by-index *context-grid* (car bar))
+                          (get-y-by-index *context-grid* (cdr bar)))
+                    ret)))))
 
 (defun get-object-h-index (obj)
   (or (position obj *context-objects*)
@@ -124,6 +149,15 @@
        do (line-to (realpart next-pos) (imagpart next-pos)))
     (stroke)))
 
+(defun draw-life-cycle-line (x fy ey bars)
+  (let ((cy fy))   
+   (dolist (bar bars)
+     (draw-dash-line x cy x (car bar))
+     (rectangle (- x +half-bar-width+) (car bar)
+                (* 2 +half-bar-width+) (- (cdr bar) (car bar)))
+     (setf cy (cdr bar)))
+   (draw-dash-line x cy x ey)))   
+
 ;;绘制箭头
 (defun draw-arraw-cap (fx fy tx ty &key (left t) (right t))
   (let ((w 20) (h 5))
@@ -143,17 +177,22 @@
          (hy (get-y-by-index *context-grid* vline))
          (ext (igw (get-text-extents (name obj)))))
     (progn (draw-text-center-at (name obj) hx hy)
-           (draw-dash-line hx (+ hy +inner-margin+  (/ (text-height ext) 2))
-                           hx (get-height *context-grid*)))))
+           (draw-life-cycle-line
+            hx
+            (+ hy +inner-margin+  (/ (text-height ext) 2))
+            (- (get-height *context-grid*) +inner-margin+)
+            (get-active-bars obj)))))
 
 (defmethod draw-dml-element ((msg call-message))
   (let* ((from-obj (from-object msg))
          (to-obj (to-object msg))
          (from-x (if (null from-obj)
-                     (+  +min-x-margin+ (get-x-by-index *context-grid* (- (get-object-h-index from-obj) 1)))                        
+                     (+  +min-x-margin+ (get-x-by-index *context-grid* (- (get-object-h-index to-obj) 1)))                        
                      (get-x-by-index *context-grid* (get-object-h-index from-obj))))
          (from-y (get-y-by-index *context-grid* (get-call-v-index msg)))         
-         (to-x (get-x-by-index *context-grid* (get-object-h-index to-obj)))
+         (to-x (if (null to-obj)
+                   (+  +min-x-margin+ (get-x-by-index *context-grid* (- (get-object-h-index from-obj) 1)))
+                   (get-x-by-index *context-grid* (get-object-h-index to-obj))))
          (to-y from-y))
     (progn (move-to from-x from-y)
            (line-to to-x to-y)
@@ -189,8 +228,12 @@
     (fit-to-grid *context-message*)))
     
 
+(defun set-draw-style ()
+  (set-font-size 20)
+  (set-line-width 1.0))
+
 ;;最后要实现的工具宏
-(defun make-sequnce-diagram (outfile msg)
+(defun make-sequnce-diagram (name msg)
   (let* ((*context-message*  msg)
          (grid-hsize (length *context-objects*))
          (grid-vsize (+ 1 (length (all-call-messages *context-message*))))
@@ -200,18 +243,25 @@
            :hsize grid-hsize
            :vsize grid-vsize))
          (*context*
-          (create-ps-context
-           (concatenate 'string "/tmp/"  outfile ".ps")  600 600)))
+          (create-ps-context "/tmp/dml.ps"  300 300))
+         (surf nil))
     (fit-down *context-grid* (- grid-vsize 1) +min-y-margin+)
-    (set-font-size 20)
-    (set-line-width 1.0)    
+    (set-draw-style)
     (dock-all-to-grid)
+    (destroy *context*)
+    (setf surf (create-ps-surface (concatenate 'string name ".ps")
+                                  (get-width *context-grid*)
+                                  (get-height *context-grid*)))
+    (setf *context* (create-context surf))
+    (set-draw-style)
     (loop
        for obj in *context-objects*
        do (draw-dml-element obj))
     (rectangle 0 0
                (get-width *context-grid*) (get-height *context-grid*))
     (draw-dml-element msg)
+    (surface-write-to-png surf (concatenate 'string name ".png"))
+    (destroy surf)
     (destroy *context*)))
     
 
