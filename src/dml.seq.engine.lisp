@@ -3,7 +3,7 @@
           #:dml.seq.core
           #:dml.seq.grid
           #:cl)
-    (:export    #:draw-message)
+    (:export   #:draw-message)
     (:documentation "doc"))
 
 (in-package :dml.seq.engine)
@@ -36,19 +36,18 @@
                           (get-call-v-index (cdr caller)))
                     ret)))))
 
-(defun compress-caller-phases (obj)
-  (let ((phases (get-caller-phases obj)))
-   (if (or (null phases) (null (cdr phases)))
-       phases
-       (if (< (cdar phases) (caadr phases))
-           (cons (car phases) (compress-active-phases (cdr phases)))
-           (progn
-             (setf (caadr phases) (caar phases))
-             (compress-active-phases (cdr phases)))))))
+(defun compress-caller-phases (phases)
+  (if (or (null phases) (null (cdr phases)))
+      phases
+      (if (< (cdar phases) (caadr phases))
+          (cons (car phases) (compress-caller-phases (cdr phases)))
+          (progn
+            (setf (caadr phases) (caar phases))
+            (compress-caller-phases (cdr phases))))))
 
 (defun get-active-bars (obj)
  (let ((ret nil))
-   (reverse (dolist (bar (compress-caller-phases obj) ret)
+   (reverse (dolist (bar (compress-caller-phases (get-caller-phases obj)) ret)
               (push (cons (get-y-by-index *context-grid* (car bar))
                           (get-y-by-index *context-grid* (cdr bar)))
                     ret)))))
@@ -83,21 +82,26 @@
 
 (defmethod fit-to-grid ((msg call-message))
   (let* ((label-ext (igw (get-text-extents (label msg))))
-         (width (+ (* 2 +min-x-margin+)
+         (width (+ (* 2 +inner-margin+)
+                   (* 2 +min-x-margin+)
                    (text-width label-ext)))
          (height (+ (* 2 +min-y-margin+)
                     (text-height label-ext))))
-    (if (or (null (from-object msg)))            
+    (if (null (from-object msg))            
         (fit-left *context-grid*
                   (get-object-h-index (to-object msg))
                   width)
-        (if (call-to-right-p msg)
-            (fit-right *context-grid*
-                       (get-object-h-index (from-object msg))
-                       width)
+        (if (null (to-object msg))
             (fit-left *context-grid*
                       (get-object-h-index (from-object msg))
-                      width)))
+                      width)  
+            (if (call-to-right-p msg)
+                (fit-right *context-grid*
+                           (get-object-h-index (from-object msg))
+                           width)
+                (fit-left *context-grid*
+                          (get-object-h-index (from-object msg))
+                          width))))
     (fit-up *context-grid*
             (get-call-v-index msg)
             height)))
@@ -160,7 +164,7 @@
 
 ;;绘制箭头
 (defun draw-arraw-cap (fx fy tx ty &key (left t) (right t))
-  (let ((w 20) (h 5))
+  (let ((w 8) (h 3))
     (progn (save)
            (translate tx ty)
            (rotate (phase (complex (- tx fx)
@@ -193,22 +197,27 @@
          (to-x (if (null to-obj)
                    (+  +min-x-margin+ (get-x-by-index *context-grid* (- (get-object-h-index from-obj) 1)))
                    (get-x-by-index *context-grid* (get-object-h-index to-obj))))
-         (to-y from-y))
-    (progn (move-to from-x from-y)
+         (to-y from-y)
+         (to-right (call-to-right-p msg))
+         (fx-offset (if to-right +half-bar-width+ (* -1 +half-bar-width+)))
+         (tx-offset (* -1 fx-offset)))
+    (progn (incf from-x fx-offset)
+           (incf to-x tx-offset)
+           (move-to from-x from-y)
            (line-to to-x to-y)
            (stroke)
            (draw-arraw-cap from-x from-y to-x to-y)
-           (if (call-to-right-p msg)
-               (draw-text-start-at (label msg)  from-x from-y)
-               (draw-text-end-to (label msg) from-x from-y)))))
+           (if to-right
+               (draw-text-start-at (label msg)  (+ +inner-margin+ from-x) from-y)
+               (draw-text-end-to (label msg) (- from-x +inner-margin+) from-y)))))
 
 (defmethod draw-dml-element  ((msg self-call))
   (let* ((from-obj (from-object msg))
-         (from-x (get-x-by-index *context-grid* (get-object-h-index from-obj)))
+         (from-x (+ +half-bar-width+ (get-x-by-index *context-grid* (get-object-h-index from-obj))))
          (from-y (get-y-by-index *context-grid* (get-call-v-index msg)))
-         (x1 (+ from-x (* 2 +min-x-margin+)))  (y1 from-y)
-         (x2 x1)  (y2 (+ y1 +min-y-margin+))
-         (x3 from-x) (y3 (+ from-y 5)))
+         (x1 (+ from-x (* 4 +min-x-margin+)))  (y1 from-y)
+         (x2 x1)  (y2 (+ y1 (* 3 +min-y-margin+)))
+         (x3 from-x) (y3 (+ from-y +min-y-margin+)))
     (progn (move-to from-x from-y)
            (curve-to  x1 y1 x2 y2 x3 y3)
            (stroke)
@@ -230,7 +239,7 @@
 
 (defun set-draw-style ()
   (set-font-size 20)
-  (set-line-width 1.0))
+  (set-line-width 1))
 
 ;;最后要实现的工具宏
 (defun make-sequnce-diagram (name msg)
@@ -262,6 +271,6 @@
     (draw-dml-element msg)
     (surface-write-to-png surf (concatenate 'string name ".png"))
     (destroy surf)
-    (destroy *context*)))
-    
+    (setf *context-objects* nil)
+    (destroy *context*)))    
 

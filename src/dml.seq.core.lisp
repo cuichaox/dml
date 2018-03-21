@@ -65,7 +65,7 @@
 (defclass del-call (call-message) ())
 
 (defclass self-call (call-message)
-  ((to-object :initarg :from-xpos)))
+  ((to-object :initarg :from-object)))
 
 (defclass multi-message (message) ())
 
@@ -73,18 +73,13 @@
   ((messages :accessor messages :initarg :messages :initform nil)))
 
 
-(defgeneric push-to (msg grp-msg))
-
-(defmethod push-to ((msg message) (grp-msg group-message))
+(defun push-to (msg grp-msg)
   (progn (when msg (push msg (messages grp-msg)))
          grp-msg))
 
-(defgeneric append-to (msg grp-msg))
-
-(defmethod append-to (msg grp-msg)
+(defun append-to (msg grp-msg)
   (progn (when msg (alexandria:appendf (messages grp-msg) (list msg)))
          grp-msg))
-
 
 (defclass guard-message (message)
   ((guard :accessor guard :initarg :guard :initform "")
@@ -141,7 +136,8 @@
         (values obj t))))
 
 (defun make-call-by-char-type (ch label from to)
-  (cond ((char= ch #\=) (make-instance 'syn-call :label label :from-object from :to-object to))
+  (cond ((eq from to)  (make-instance 'self-call :label label :from-object from))
+        ((char= ch #\=) (make-instance 'syn-call :label label :from-object from :to-object to))
         ((char= ch #\-) (make-instance 'asy-call :label label :from-object from :to-object to))
         ((char= ch #\n) (make-instance 'new-call :label label :from-object from :to-object to))
         ((char= ch #\x) (make-instance 'del-call :label label :from-object from :to-object to))
@@ -154,13 +150,15 @@
     (list  (elt type-ch 0)
            obj-name
            msg-label
-           ret-label)))
+           (if ret-label (subseq ret-label 1) nil))))
 
 (defun make-by-director (from-obj director)
   (destructuring-bind (prefix obj-name msg-label ret-label) (parse-message-director director)
+    (when (equal obj-name "this") (if from-obj (setf obj-name (name from-obj))
+                                               (error "call self message on nil object.")))
     (multiple-value-bind (to-obj existp) (intern-object obj-name) 
-      (let ((call-msg (make-call-by-char-type prefix msg-label from-obj to-obj))
-            (ret-msg (when ret-label
+      (let* ((call-msg (make-call-by-char-type prefix msg-label from-obj to-obj))
+             (ret-msg (when (and (not (typep call-msg 'self-call)) ret-label)
                        (make-instance 'ret-call
                                       :label ret-label
                                       :from-object to-obj
@@ -168,7 +166,7 @@
         (if (typep call-msg 'new-call)
             (if (not existp)
                 (error (format nil "The name ~s is used by other." obj-name))
-                (setf (new-message to-obj) call-msg)))
+                (setf (new-message to-obj) call-msg)))        
         (values call-msg ret-msg)))))
 
 (defparameter *context-current-object* nil)
@@ -180,23 +178,23 @@
 (defun &go (&rest dir-or-msg-s)
   (if (null dir-or-msg-s) (make-instance 'group-message)
       (multiple-value-bind (call ret) (convert-to-message (car dir-or-msg-s))
-        (appendf (callers (to-object call))
-                 (list (cons call ret)))
+        (when ret
+              (appendf (callers (to-object call))
+                       (list (cons call ret))))
         (push-to call
                  (push-to ret
                           (apply '&go (cdr dir-or-msg-s)))))))
-        
 
 (defun &in (&rest dir-or-msg-s)
   (if (null dir-or-msg-s) (make-instance 'group-message)
       (multiple-value-bind (call ret) (convert-to-message (car dir-or-msg-s))
-        (appendf  (callers (to-object call))
-                  (list (cons call ret)))
+        (when ret
+              (appendf  (callers (to-object call))
+                        (list (cons call ret))))
         (append-to ret
                    (push-to call
                             (let ((*context-current-object* (last-object call)))
                               (apply '&in (cdr dir-or-msg-s))))))))
-        
 
 (defun &opt (guard msg)
   (make-instance 'opt-guard
