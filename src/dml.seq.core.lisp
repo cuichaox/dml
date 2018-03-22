@@ -175,46 +175,56 @@
       (values dir-or-msg nil)
       (make-by-director *context-current-object* dir-or-msg)))
 
-(defun &go (&rest dir-or-msg-s)
-  (if (null dir-or-msg-s) (make-instance 'group-message)
-      (multiple-value-bind (call ret) (convert-to-message (car dir-or-msg-s))
-        (when ret
-              (appendf (callers (to-object call))
-                       (list (cons call ret))))
-        (push-to call
-                 (push-to ret
-                          (apply '&go (cdr dir-or-msg-s)))))))
+(defmacro &go (&rest dir-or-msg-s)
+  (if (null dir-or-msg-s)
+      `(make-instance 'group-message)
+      (let ((first (car dir-or-msg-s))
+            (others (cdr dir-or-msg-s)))
+        (if (stringp first)
+            `(multiple-value-bind ($call $ret) (convert-to-message ,first)
+               (when $ret
+                 (appendf (callers (to-object $call))
+                          (list (cons $call $ret))))
+               (push-to $call (push-to $ret (&go ,@others))))
+            `(let (($call ,first))
+               (push-to $call (&go ,@others)))))))
 
-(defun &in (&rest dir-or-msg-s)
-  (if (null dir-or-msg-s) (make-instance 'group-message)
-      (multiple-value-bind (call ret) (convert-to-message (car dir-or-msg-s))
-        (when ret
-              (appendf  (callers (to-object call))
-                        (list (cons call ret))))
-        (append-to ret
-                   (push-to call
-                            (let ((*context-current-object* (last-object call)))
-                              (apply '&in (cdr dir-or-msg-s))))))))
+(defmacro &in (&rest dir-or-msg-s)
+  (if (null dir-or-msg-s)
+      `(make-instance 'group-message)
+      (let ((first (car dir-or-msg-s))
+            (others (cdr dir-or-msg-s)))
+        (if (stringp first)
+            `(multiple-value-bind ($call $ret) (convert-to-message ,first)
+               (when $ret
+                   (appendf  (callers (to-object $call))
+                             (list (cons $call $ret))))
+               (append-to $ret
+                       (push-to $call
+                               (let ((*context-current-object* (last-object $call)))
+                                 (&in ,@others)))))
+            `(let (($call ,first))
+               (push-to $call (&in ,@others)))))))
 
-(defun &opt (guard msg)
-  (make-instance 'opt-guard
-                 :guard guard
-                 :the-message msg))
+(defmacro &opt (guard msg)
+  `(make-instance 'opt-guard
+                  :guard ,guard
+                  :the-message ,msg))
 
-(defun &loop (guard msg)
-  (make-instance 'loop-guard
-                 :gurad guard
-                 :the-message msg))
+(defmacro &loop (guard msg)
+  `(make-instance 'loop-guard
+                  :gurad ,guard
+                  :the-message ,msg))
 
-(defun &if (guard if-msg &optional ( else-msg nil))
+(defmacro &if (guard if-msg &optional (else-msg nil))
   (if (null else-msg)
-      (&opt guard if-msg)
-      (make-instance 'alt-group
-                     :if-message (make-instance 'guard-message
-                                                :guard guard
-                                                :the-message if-msg)
-                     :else-message (make-instance 'guard-message
-                                                  :guard (concatenate 'string "not " guard)
-                                                  :the-message else-msg))))
+      `(&opt ,guard ,if-msg)
+      `(make-instance 'alt-group
+                      :if-message (make-instance 'guard-message
+                                                 :guard ,guard
+                                                 :the-message ,if-msg)
+                      :else-message (make-instance 'guard-message
+                                                  :guard ,(concatenate 'string "not " guard)
+                                                  :the-message ,else-msg))))
 
 
