@@ -224,7 +224,7 @@
                                                  :guard ,guard
                                                  :the-message ,if-msg)
                       :else-message (make-instance 'guard-message
-                                                  :guard ,(concatenate 'string "not " ,guard)
+                                                  :guard ,(concatenate 'string "not " guard)
                                                   :the-message ,else-msg))))
 
 
