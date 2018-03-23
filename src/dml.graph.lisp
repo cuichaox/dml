@@ -1,6 +1,6 @@
 
 (uiop:define-package :dml.graph
-    (:use :cl :donuts)
+    (:use :cl :donuts :dml.node)
   (:reexport :donuts)
   (:export #:attributes
            #:methods
@@ -85,15 +85,10 @@
 ;;创建角色
 (defun actor(name)
   (reg-node name
-            (<> (html
-                 (table :border 0
-                  (tr (td :border 0
-                          (img :src
-                               (namestring
-                                (asdf:system-relative-pathname :dml                                 
-                                  "src/actor.png")))))    
-                  (tr (td :border 0 name))))
-                :shape :plaintext)))
+            (<> name
+                :image (dump-node-to-png node-stick-man)
+                :labelloc "b"
+                :shape "none")))
 
 ;;创建用例
 (defun ucas(name)
