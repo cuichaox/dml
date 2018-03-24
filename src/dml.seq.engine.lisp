@@ -150,9 +150,9 @@
   (let ((cy fy))   
    (dolist (bar bars)
      (draw-dash-line x cy x (car bar))
-     ; strange problem
      (rectangle (- x +half-bar-width+) (car bar)
                 (* 2 +half-bar-width+) (- (cdr bar) (car bar)))
+     (stroke)
      (setf cy (cdr bar)))
    (draw-dash-line x cy x ey)))   
 
