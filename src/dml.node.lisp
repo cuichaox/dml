@@ -13,6 +13,7 @@
 
 |#
 
+
 (defun draw-node (node)
   (dolist (cmd (getf node :commands))
     (apply (car cmd) (cdr cmd))))
@@ -23,28 +24,30 @@
                extname))
   
 
-(defun dump-node-to-ps (node &optional (to-scale 10) (fname nil))
-  (let* ((width  (* to-scale (getf node :width)))
-         (height (* to-scale (getf node :height)))
-         (ps-file-name (or fname (tmp-ps)))
+(defun dump-node-to-ps (node &key (to-scale 7) (file-name nil) (margin 10))
+  (let* ((width  (+ (* to-scale (getf node :width)) (* 2 margin)))
+         (height (+ (* to-scale (getf node :height)) (* 2 margin)))
+         (ps-file-name (or file-name (tmp-ps ".ps")))
          (*context* (create-ps-context ps-file-name width height)))
-    (scale to-scale to-scale)
+    (translate margin margin)
+    (scale to-scale to-scale)    
     (set-line-width (/ 1 to-scale))
     (draw-node node)
     (destroy *context*)
     ps-file-name))
 
 
-(defun dump-node-to-png (node &optional (to-scale 15) (fname nil))
-  (let* ((width  (* to-scale (getf node :width)))
-         (height (* to-scale (getf node :height)))
-         (png-file-name (or fname (tmp-ps ".png"))))
+(defun dump-node-to-png (node &key (to-scale 10) (file-name nil) (margin 10))
+  (let* ((width  (+ (* to-scale (getf node :width)) (* 2 margin)))
+         (height (+ (* to-scale (getf node :height)) (* 2 margin)))
+         (png-file-name (or file-name (tmp-ps ".png"))))
     (with-png-file (png-file-name :rgb24 width height)
       (set-source-rgb 1 1 1)
       (paint)
-      (scale to-scale to-scale)
+      (translate margin margin)
+      (scale to-scale to-scale)      
       (set-source-rgb 0 0 0)
-      (set-line-width (/ 2 to-scale))
+      (set-line-width (/ 2 to-scale))      
       (draw-node node))      
     png-file-name))
 

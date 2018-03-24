@@ -138,25 +138,19 @@
           (stroke))))
 ;;绘制虚线                  
 (defun draw-dash-line (fx fy tx ty)
-  (let* ((fp (complex fx fy))
-         (tp (complex tx ty))
-         (total-step  (- tp fp))
-         (total-len (abs total-step))
-         (dir (/ total-step total-len))
-         (step-len 8.0))    
-    (loop
-       for cur-len from 0.0 to total-len by step-len       
-       for cur-pos = (+ fp (* cur-len dir))
-       for next-pos = (+ cur-pos (* 4.0 dir))       
-       do (move-to (realpart cur-pos)
-                   (imagpart cur-pos))       
-       do (line-to (realpart next-pos) (imagpart next-pos)))
-    (stroke)))
+  (save)
+  (set-dash 0.0 '(8.0 2.0 4.0 2.0))  
+  (move-to fx fy)
+  (line-to tx ty)
+  (stroke)
+  (restore))
+  
 
 (defun draw-life-cycle-line (x fy ey bars)
   (let ((cy fy))   
    (dolist (bar bars)
      (draw-dash-line x cy x (car bar))
+     ; strange problem
      (rectangle (- x +half-bar-width+) (car bar)
                 (* 2 +half-bar-width+) (- (cdr bar) (car bar)))
      (setf cy (cdr bar)))
@@ -223,6 +217,12 @@
            (stroke)
            (draw-arraw-cap x2 y2 x3 y3)
            (draw-text-start-at (label msg) from-x from-y))))
+
+(defmethod draw-dml-element ((msg ret-call))
+  (save)
+  (set-dash 0.0 '(8.0 2.0))
+  (call-next-method)
+  (restore))
 
 (defmethod draw-dml-element ((msg message))
   (loop
