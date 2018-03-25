@@ -8,7 +8,7 @@
     :depends-on  (#:donuts #:cl-cairo2 #:alexandria #:cl-ppcre)
     :components  ((:file "src/dml.node")                  
                   (:file "src/dml.graph"
-                         :depends-on ("src/dml.node"))                  
+                         :depends-on ("src/dml.node"))                
                   (:file "src/dml.seq.grid")
                   (:file "src/dml.seq.core")                         
                   (:file "src/dml.seq.engine"

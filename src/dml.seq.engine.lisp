@@ -66,7 +66,39 @@
 
 (defgeneric fit-to-grid (element))
 (defgeneric draw-dml-element (element))
-  
+
+;得到消息的边界(在网格系统中的位置)
+(defgeneric left-side-index (msg))
+(defgeneric right-side-index (msg))
+(defgeneric up-side-index (msg))
+(defgeneric down-side-index (msg))
+
+(defmethod left-side-index ((msg call-message))
+  (min (get-object-v-index (from-object msg))
+       (get-object-v-index (to-object msg))))
+
+(defmethod right-side-index ((msg call-message))
+  (max (get-object-v-index (from-object msg))
+       (get-object-v-index (to-object msg))))
+
+(defmethod up-side-index ((msg call-message))
+  (get-call-v-index msg))
+
+(defmethod down-side-index ((msg call-message))
+  (get-call-v-index msg))
+
+(defmethod left-side-index ((msg message))
+  (apply #'min (mapcar #'left-side-index (all-call-messages msg))))
+
+(defmethod right-side-index ((msg message))
+  (apply #'max (mapcar #'right-side-index (all-call-messages msg))))
+
+(defmethod up-side-index ((msg message))
+  (get-call-v-index (first (all-call-messages msg))))
+
+(defmethod down-side-index ((msg message))
+  (get-call-v-index (car (last (all-call-messages msg)))))
+
 ;;对象的大小
 (defmethod fit-to-grid ((obj object))
   (let* ((name-ext (igw (get-text-extents (name obj))))
@@ -110,6 +142,28 @@
   (loop
      for call in (all-call-messages msg)
      do (fit-to-grid call)))
+
+(defmethod fit-to-grid((msg frame-guard))
+  (fit-left *context-grid* (left-side-index msg) (* 3 +min-x-margin+))
+  (fit-right *context-grid* (right-side-index msg) (* 2 +min-x-margin+))
+  (fit-up *context-grid* (up-side-index msg) (* 2 +min-y-margin+))
+  (fit-down *context-grid* (down-side-index msg) (* 2 +min-y-margin+))
+  (call-next-method))
+
+;;绘制边框用
+(defun draw-frame(name fx fy tx ty)
+  (let ((ext (igw (get-text-extents name)))
+        (small-margin (/ +inner-margin+ 3)))
+    (rectangle fx fy (- tx fx) (- ty fy))
+    (stroke)
+    (move-to (+ small-margin (- fx (text-x-bearing ext)))
+             (+ small-margin (- fy (text-y-bearing ext))))
+    (show-text name)
+    (move-to   fx (+ fy (* 2 small-margin) (text-height ext)))
+    (rel-line-to (+ (* 2 small-margin) (text-width ext))  0)
+    (rel-line-to (* 2 small-margin) (* -1 (+ (* 2 small-margin)  (text-height ext))))
+    (stroke)))
+
 
 ;;以制定坐标为起点绘制文本
 (defun draw-text-start-at (text x y)
@@ -224,10 +278,26 @@
   (call-next-method)
   (restore))
 
+(defmethod draw-dml-element ((msg group-message))
+  (dolist (m (messages msg))
+    (draw-dml-element m)))
+
 (defmethod draw-dml-element ((msg message))
   (loop
      for call in (all-call-messages msg)
      do (draw-dml-element call)))
+
+(defmethod draw-dml-element ((msg frame-guard))
+  (let* ((fx (- (get-x-by-index *context-grid* (left-side-index msg))
+                (* 2 +min-x-margin+)))
+         (tx (+ (get-x-by-index *context-grid* (right-side-index msg))
+                +min-x-margin+))
+         (fy (- (get-y-by-index *context-grid* (up-side-index msg))
+                +min-y-margin+))
+         (ty (+ (get-y-by-index *context-grid* (down-side-index msg))
+                +min-y-margin+)))    
+    (draw-frame (label msg) fx tx fy ty)
+    (call-next-method)))   
 
 (defun dock-all-to-grid()
   (progn

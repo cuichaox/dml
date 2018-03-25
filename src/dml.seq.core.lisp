@@ -1,13 +1,15 @@
 
 (uiop:define-package :dml.seq.core
-    (:mix :cl :alexandria)
+    (:mix #:cl
+          #:alexandria)
   (:export #:object
            #:new-message
            #:end-message
            #:callers
            #:name
-           #:is-active           
-           #:message           
+           #:is-active
+           #:message
+           #:messages           
            #:label
            #:call-message
            #:from-object
@@ -22,15 +24,15 @@
            #:all-call-messages
            #:group-message
            #:guard-message
-           #:guard
-           #:frame-message
+           #:frame-guard
            #:the-message
-           #:opt-guard
-           #:loop-guard
+           #:opt-frame
+           #:loop-frame
            #:alt-group
            #:*context-objects*
            #:&go
            #:&in
+           #:&opt
            #:&if
            #:&loop))
 
@@ -85,17 +87,17 @@
   ((guard :accessor guard :initarg :guard :initform "")
    (the-message :accessor the-message :initarg :the-message :initform nil)))
 
-(defclass frame-message (message)
+(defclass frame-guard (guard-message)
   ())
 
-(defclass opt-guard (guard-message frame-message)
-  ((name :initform "opt")))
+(defclass opt-frame (frame-guard)
+  ((label :initform "opt")))
 
-(defclass loop-guard (gurad-message frame-message)
-  ((name :initform "loop")))
+(defclass loop-frame (frame-message)
+  ((label :initform "loop")))
 
-(defclass alt-group ( multi-message frame-message)
-  ((name :initform "alt")
+(defclass alt-group (multi-message)
+  ((label :initform "alt")
    (if-message :accessor if-message :initarg :if-message :initform nil)
    (else-message :accessor else-message :initarg :else-message :initform nil)))
 
@@ -104,7 +106,7 @@
 (defmethod all-call-messages ((msg call-message))
   (list msg))
 
-(defmethod all-all-messages ((msg guard-message))
+(defmethod all-call-messages ((msg guard-message))
   (all-call-messages (the-message msg)))
 
 (defmethod all-call-messages ((msg group-message))
@@ -207,14 +209,14 @@
                (push-to $call (&in ,@others)))))))
 
 (defmacro &opt (guard msg)
-  `(make-instance 'opt-guard
+  `(make-instance 'opt-frame
                   :guard ,guard
-                  :the-message ,msg))
+                  :the-message  (convert-to-message ,msg)))
 
 (defmacro &loop (guard msg)
-  `(make-instance 'loop-guard
+  `(make-instance 'loop-frame
                   :gurad ,guard
-                  :the-message ,msg))
+                  :the-message (convert-to-message ,msg)))
 
 (defmacro &if (guard if-msg &optional (else-msg nil))
   (if (null else-msg)
@@ -222,9 +224,9 @@
       `(make-instance 'alt-group
                       :if-message (make-instance 'guard-message
                                                  :guard ,guard
-                                                 :the-message ,if-msg)
+                                                 :the-message (convert-to-message ,if-msg))
                       :else-message (make-instance 'guard-message
                                                   :guard ,(concatenate 'string "not " guard)
-                                                  :the-message ,else-msg))))
+                                                  :the-message (convert-to-message ,else-msg)))))
 
 

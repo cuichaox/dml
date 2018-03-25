@@ -33,6 +33,11 @@
   (destroy *context*))
 
 
+(let ((*context* (create-ps-context "/tmp/dml.ps" 400 400)))
+  (set-line-width 1.0)
+  (draw-frame "loop" 1 1 200 200)
+  (destroy *context*))
+
 
 ;
 (make-sequnce-diagram "test" (&in "==>obj1.msg1/ok" "==>obj2.msg2/ok" "==>obj3.msg3/ok"))
