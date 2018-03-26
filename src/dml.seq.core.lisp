@@ -24,6 +24,7 @@
            #:all-call-messages
            #:group-message
            #:guard-message
+           #:guard
            #:frame-guard
            #:the-message
            #:opt-frame
@@ -93,12 +94,12 @@
 (defclass opt-frame (frame-guard)
   ((label :initform "opt")))
 
-(defclass loop-frame (frame-message)
+(defclass loop-frame (frame-guard)
   ((label :initform "loop")))
 
-(defclass alt-group (multi-message)
+(defclass alt-frame (frame-message)
   ((label :initform "alt")
-   (if-message :accessor if-message :initarg :if-message :initform nil)
+   (the-message :accessor if-message :initarg :if-message :initform nil)
    (else-message :accessor else-message :initarg :else-message :initform nil)))
 
 (defgeneric all-call-messages (msg))
@@ -112,7 +113,7 @@
 (defmethod all-call-messages ((msg group-message))
   (apply #'append (mapcar #'all-call-messages  (messages msg))))
 
-(defmethod all-call-messages ((msg alt-group))
+(defmethod all-call-messages ((msg alt-frame))
   (append (all-call-messages (if-message msg)) 
           (all-call-messages (else-message msg))))
 
@@ -215,18 +216,16 @@
 
 (defmacro &loop (guard msg)
   `(make-instance 'loop-frame
-                  :gurad ,guard
+                  :guard ,guard
                   :the-message (convert-to-message ,msg)))
 
 (defmacro &if (guard if-msg &optional (else-msg nil))
   (if (null else-msg)
-      `(&opt ,guard ,if-msg)
-      `(make-instance 'alt-group
-                      :if-message (make-instance 'guard-message
-                                                 :guard ,guard
-                                                 :the-message (convert-to-message ,if-msg))
+      `(&opt ,guard (convert-to-message,if-msg))
+      `(make-instance 'alt-frame
+                      :guard ,guard
+                      :the-message  (convert-to-message ,if-msg)
                       :else-message (make-instance 'guard-message
-                                                  :guard ,(concatenate 'string "not " guard)
-                                                  :the-message (convert-to-message ,else-msg)))))
-
+                                                   :guard (concatenate 'string)
+                                                   :the-message (convert-to-message ,else-msg)))))
 

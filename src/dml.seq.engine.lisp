@@ -14,7 +14,7 @@
 ;;参数
 (defconstant +min-x-margin+ 12.0)
 (defconstant +inner-margin+ 12.0)
-(defconstant +min-y-margin+ 24.0)
+(defconstant +min-y-margin+ 18.0)
 (defconstant +half-bar-width+ 4.0)
 
 ;;忽略告警使用的工具函数
@@ -67,19 +67,54 @@
 (defgeneric fit-to-grid (element))
 (defgeneric draw-dml-element (element))
 
-;得到消息的边界(在网格系统中的位置)
+;;得到消息边界，的边距
+(defgeneric up-extra-space (msg))
+(defgeneric left-extra-space(msg))
+
+(defmethod up-extra-space ((msg message)) 0)
+(defmethod left-extra-space((msg message)) 0)
+
+(defmethod up-extra-space ((msg call-message))
+  (let* ((label-ext (igw (get-text-extents (label msg)))))
+    (+ +min-y-margin+ (text-height label-ext))))
+
+(defmethod up-extra-space ((msg guard-message))
+  (let* ((guard-ext (igw (get-text-extents (guard msg)))))
+    (+ (up-extra-space (the-message msg))
+       +min-y-margin+
+       (text-height guard-ext))))
+
+(defmethod left-extra-space ((msg frame-guard))
+  (let* ((label-ext (igw (get-text-extents (label msg)))))
+    (+ (left-extra-space (the-message msg))
+       +min-x-margin+
+       +half-bar-width+
+       +min-x-margin+
+       (text-width label-ext))))
+
+
+;;得到消息的边界,在网格系统中的位置)
 (defgeneric left-side-index (msg))
 (defgeneric right-side-index (msg))
 (defgeneric up-side-index (msg))
 (defgeneric down-side-index (msg))
 
 (defmethod left-side-index ((msg call-message))
-  (min (get-object-v-index (from-object msg))
-       (get-object-v-index (to-object msg))))
+  (if (null (from-object msg))
+      (get-object-h-index (to-object msg))
+      (if (null (to-object msg))
+          (get-object-h-index (from-object msg))
+          (min (get-object-h-index (from-object msg))
+               (get-object-h-index (to-object msg))))))
 
 (defmethod right-side-index ((msg call-message))
-  (max (get-object-v-index (from-object msg))
-       (get-object-v-index (to-object msg))))
+  (if (null (from-object msg))
+      (get-object-h-index (to-object msg))
+      (if (null (to-object msg))
+          (get-object-h-index (from-object msg))
+          (max (get-object-h-index (from-object msg))
+               (get-object-h-index (to-object msg))))))
+  
 
 (defmethod up-side-index ((msg call-message))
   (get-call-v-index msg))
@@ -143,12 +178,27 @@
      for call in (all-call-messages msg)
      do (fit-to-grid call)))
 
+(defmethod fit-to-grid ((msg group-message))
+  (dolist (m (messages msg))
+    (fit-to-grid m)))
+
+(defmethod fit-to-grid ((msg guard-message))
+  (progn
+    (fit-up *context-grid* (up-side-index msg) 
+            (+ (up-extra-space msg)
+               +min-y-margin+))
+    (fit-right *context-grid* (left-side-index msg)
+               (+ (* 2 +min-x-margin+)
+                  (* 2 +half-bar-width+)
+                  (text-width (igw (get-text-extents (guard msg))))))
+    (fit-to-grid (the-message msg))))         
+
 (defmethod fit-to-grid((msg frame-guard))
-  (fit-left *context-grid* (left-side-index msg) (* 3 +min-x-margin+))
-  (fit-right *context-grid* (right-side-index msg) (* 2 +min-x-margin+))
-  (fit-up *context-grid* (up-side-index msg) (* 2 +min-y-margin+))
-  (fit-down *context-grid* (down-side-index msg) (* 2 +min-y-margin+))
-  (call-next-method))
+  (progn
+    (fit-left *context-grid* (left-side-index msg)
+              (+ (left-extra-space msg)
+                 +min-x-margin+))
+    (call-next-method)))
 
 ;;绘制边框用
 (defun draw-frame(name fx fy tx ty)
@@ -279,24 +329,36 @@
   (restore))
 
 (defmethod draw-dml-element ((msg group-message))
-  (dolist (m (messages msg))
-    (draw-dml-element m)))
+  (dolist (one-msg (messages msg))
+    (draw-dml-element one-msg)))
 
 (defmethod draw-dml-element ((msg message))
   (loop
      for call in (all-call-messages msg)
      do (draw-dml-element call)))
 
+(defmethod draw-dml-element ((msg guard-message))
+  (progn (draw-text-end-to (guard msg)
+                           (- (get-x-by-index *context-grid* (1+ (left-side-index msg)))
+                              +min-x-margin+)
+                           (+ (- (get-y-by-index *context-grid* (up-side-index msg))
+                                 (up-extra-space msg))
+                              (text-height (igw (get-text-extents (guard msg))))))
+         (draw-dml-element (the-message msg))))
+                           
+
 (defmethod draw-dml-element ((msg frame-guard))
-  (let* ((fx (- (get-x-by-index *context-grid* (left-side-index msg))
-                (* 2 +min-x-margin+)))
+  (let* ((up-space (up-extra-space msg))
+         (left-space (left-extra-space msg))
+         (fx (- (get-x-by-index *context-grid* (left-side-index msg))
+                left-space))
          (tx (+ (get-x-by-index *context-grid* (right-side-index msg))
                 +min-x-margin+))
          (fy (- (get-y-by-index *context-grid* (up-side-index msg))
-                +min-y-margin+))
+                up-space))
          (ty (+ (get-y-by-index *context-grid* (down-side-index msg))
                 +min-y-margin+)))    
-    (draw-frame (label msg) fx tx fy ty)
+    (draw-frame (label msg) fx fy tx ty)
     (call-next-method)))   
 
 (defun dock-all-to-grid()
@@ -340,7 +402,7 @@
                (get-width *context-grid*) (get-height *context-grid*))
     (draw-dml-element msg)
     (surface-write-to-png surf (concatenate 'string name ".png"))
-    (destroy surf)
+    (destroy surf)        
     (setf *context-objects* nil)
     (destroy *context*)))    
 

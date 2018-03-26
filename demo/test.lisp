@@ -40,4 +40,6 @@
 
 
 ;
-(make-sequnce-diagram "test" (&in "==>obj1.msg1/ok" "==>obj2.msg2/ok" "==>obj3.msg3/ok"))
+(make-sequnce-diagram "test" (&in "==>obj1.msg1/ok"
+                                  (&opt "test" "==>obj2.msg2/ok")
+                                  "==>obj3.msg3/ok"))
