@@ -1,27 +1,30 @@
 
 (uiop:define-package :dml.graph
-    (:use :cl :donuts :dml.node)
-  (:reexport :donuts)
-  (:export #:attributes
-           #:methods
-           #:@name
-           #:full-class
-           #:simp-class
-           #:actor
-           #:ucas
-           #:pack
-           #:comp           
-           #:-genby-
-           #:-genby-*
-           #:-relby-
-           #:-relby-*
-           #:-com-
-           #:-com-*
-           #:-agg-
-           #:-agg-*
-           #:-dep-
-           #:-dep-*
-           #:-dep--))
+    (:mix #:cl
+          #:donuts
+          #:dml.node)
+  (:export  #:$
+            #:&
+            #:attributes
+            #:methods
+            #:@name
+            #:full-class
+            #:simp-class
+            #:actor
+            #:ucas
+            #:pack
+            #:comp           
+            #:-genby-
+            #:-genby-*
+            #:-relby-
+            #:-relby-*
+            #:-com-
+            #:-com-*
+            #:-agg-
+            #:-agg-*
+            #:-dep-
+            #:-dep-*
+            #:-dep--))
            
 
 (in-package :dml.graph)
@@ -172,6 +175,6 @@
 (defun -lin- (node1 node2)
   (-> node1 node2 :dir "none"))
 
-;;访问接口
-;(defun -reqby-(node1 node2)
-;  (->node1 node2 :dir "back" :arrowtail ""))
+
+
+
