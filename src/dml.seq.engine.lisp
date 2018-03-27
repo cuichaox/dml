@@ -3,13 +3,20 @@
           #:dml.seq.core
           #:dml.seq.grid
           #:cl)
-    (:export   #:draw-message)
-    (:documentation "doc"))
+  (:export   #:make-sequnce-diagram
+             #:*context-sequnce-attrs*)
+  (:documentation "doc"))
 
 (in-package :dml.seq.engine)
 
 (defparameter *context-grid* nil)
 (defparameter *context-message* nil)
+(defparameter *context-sequnce-attrs*
+  `(:font-size 20
+    :line-with 1.0
+    :background-color ,(rgba 1.0 1.0 1.0 1.0)
+    :fore-normal-color ,(rgba 0.0 0.0 0.0 1.0)
+    :fore-dim-color ,(rgba 0.5 0.5 0.6 1.0)))
 
 ;;参数
 (defconstant +min-x-margin+ 12.0)
@@ -367,42 +374,28 @@
        for obj in *context-objects*
        do  (fit-to-grid obj))
     (fit-to-grid *context-message*)))
-    
 
-(defun set-draw-style ()
-  (set-font-size 20)
-  (set-line-width 1))
-
-;;最后要实现的工具宏
 (defun make-sequnce-diagram (name msg)
   (let* ((*context-message*  msg)
          (grid-hsize (length *context-objects*))
          (grid-vsize (+ 1 (length (all-call-messages *context-message*))))
-         (*context-grid*
-          (make-instance
-           'grid
-           :hsize grid-hsize
-           :vsize grid-vsize))
-         (*context*
-          (create-ps-context "/tmp/dml.ps"  300 300))
-         (surf nil))
+         (*context-grid* (make-instance 'grid :hsize grid-hsize :vsize grid-vsize))
+         (ps-surface (create-ps-surface (concatenate 'string name ".ps") 200 200))
+         (*context* (create-context ps-surface)))         
     (fit-down *context-grid* (- grid-vsize 1) +min-y-margin+)
-    (set-draw-style)
+    (set-font-size (getf *context-sequnce-attrs* :font-size))
     (dock-all-to-grid)
-    (destroy *context*)
-    (setf surf (create-ps-surface (concatenate 'string name ".ps")
-                                  (get-width *context-grid*)
-                                  (get-height *context-grid*)))
-    (setf *context* (create-context surf))
-    (set-draw-style)
+    (ps-surface-set-size ps-surface (get-width *context-grid*) (get-height *context-grid*))
+    (set-source-color (getf *context-sequnce-attrs* :backgroud-color))
+    (paint)
+    (set-source-color (getf *context-sequnce-attrs* :fore-normal-color))
+    (set-line-width (getf *context-sequnce-attrs* :line-with))
     (loop
        for obj in *context-objects*
-       do (draw-dml-element obj))
-    (rectangle 0 0
-               (get-width *context-grid*) (get-height *context-grid*))
+       do (draw-dml-element obj))    
     (draw-dml-element msg)
-    (surface-write-to-png surf (concatenate 'string name ".png"))
-    (destroy surf)        
+    (surface-write-to-png ps-surface (concatenate 'string name ".png"))    
+    (destroy ps-surface)        
     (setf *context-objects* nil)
     (destroy *context*)))    
 

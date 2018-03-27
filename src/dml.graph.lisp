@@ -5,6 +5,7 @@
           #:dml.node)
   (:export  #:$
             #:&
+            #:with-method
             #:attributes
             #:methods
             #:@name
@@ -23,6 +24,7 @@
             #:-agg-
             #:-agg-*
             #:-dep-
+            #:->>
             #:-dep-*
             #:-dep--))
            

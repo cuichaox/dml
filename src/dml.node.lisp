@@ -8,12 +8,6 @@
 
 (in-package :dml.node)
 
-#|
-   { (<draw-cmd> <path-cmd> *) }*
-
-|#
-
-
 (defun draw-node (node)
   (dolist (cmd (getf node :commands))
     (apply (car cmd) (cdr cmd))))
@@ -22,7 +16,6 @@
   (concatenate 'string
                (uiop:native-namestring (uiop:tmpize-pathname (uiop:temporary-directory)))
                extname))
-  
 
 (defun dump-node-to-ps (node &key (to-scale 7) (file-name nil) (margin 10))
   (let* ((width  (+ (* to-scale (getf node :width)) (* 2 margin)))
@@ -35,7 +28,6 @@
     (draw-node node)
     (destroy *context*)
     ps-file-name))
-
 
 (defun dump-node-to-png (node &key (to-scale 10) (file-name nil) (margin 10))
   (let* ((width  (+ (* to-scale (getf node :width)) (* 2 margin)))
@@ -50,8 +42,6 @@
       (set-line-width (/ 2 to-scale))      
       (draw-node node))      
     png-file-name))
-
-
 
 (defparameter node-stick-man
   `(:width 4 :height 10

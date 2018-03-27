@@ -18,93 +18,86 @@ The systems that dml depended on (donuts, cl-cario2 etc.) will automatically dow
 (ql:quickload :dml)
 #+END_SRC 
 
-
-* Quick Start
-
-
-Symbol reference Table.  
-
-| Symbol name           | Type     | Description                                        |
-|-----------------------+----------+----------------------------------------------------|
-| $                     | Macro    | Output graph to the viewer .from [[https://github.com/tkych/donuts][donuts]]            |
-| &                     | Macro    | To generateg grap with node and edge  .from [[https://github.com/tkych/donuts][donuts]] |
-| full-class            | Function | Create a class node whih attributes and methods.   |
-| attributes, methods   | Function | Define attribute/method list for the full-calss    |
-| simp-class            | Function | Return a class node with a simple name in the box. |
-| with-method           | Macro    | Create to define share methods for classes.        |
-| actor                 | Function | Create a stick man as actor.                       |
-| pack                  | Function | Create a package node.                             |
-| ucas                  | Function | Create use case node.                              |
-| comp                  | Function | Create component node                              |
-| @name                 | Function | Reference pre-defined node by name                 |
-| -dep-, -dep-*, -dep-- | Function | Define dependcy edge: 1-to-1, 1-to-n, 1-by-1       |
-| -com-, com-*          | Function | Define composition edge: 1-to-1, 1-to-n            |
-| -agg-, -agg-*         | Function | Define a aggregation edge: 1-to-1, 1-to-n          |
-| -genby-,genby*        | Function | Define generalize edge: 1-to-1, 1-to-n             |
-
-
-
-
 * Examples
 
 To run Examples, load dml system and change current package to 'dml'. 
 
 #+BEGIN_SRC lisp
 (ql:quickload :dml)
-(in-package :dml)
+(use-package :dml)
 #+END_src 
 
 Evalate expression:
 
 #+BEGIN_SRC lisp
-($ (:outfile "dml.png")
-   (& (:rankdir :LR)               
-     (-dep-- "use"
-             (comp "DML")          
-             (comp "donuts")
-             (comp "Graphviz"))))
+(dml-create-graph "dml-component" (:rankdir :LR)
+  (-dep-- "use" (comp "DML") (comp "donuts") (comp "Graphviz")))
 #+END_SRC
 
 Will output image:
 
-[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml.png][file:demo/dml.png]] 
+[[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/dml-component.png][file:demo/dml-component.png]] 
 
 Evalate expression:
 #+BEGIN_SRC lisp
-($ (:outfile "class.png")
-   (with-method ("+ play () : Love" "+ work () : Hate")
-      (-genby-* (full-class "OS"
-                            "abstract"
-                            (attributes "- name : String"
-                                        "- born : Date"))
-                               
-                (full-class "Linux")
-                (full-class "Android")
-                (full-class "Apple")
-                (full-class "Windows"))
-      (-dep- "from" (@name "Android")
-                    (@name "Linux"))))
+(dml-create-graph "os-class" ()
+  (with-method ("+ play () : Love" "+ work () : Hate")
+    (-genby-* (full-class "OS" "abstract"
+                          (attributes "- name : String" "- born : Date"))
+              (full-class "Linux") (full-class "Android")
+              (full-class "Apple") (full-class "Windows"))
+    (-dep- "from" (@name "Android") (@name"Linux"))))
 #+END_SRC
 
 Will output Image:
 
-[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/class.png][file:demo/class.png]] 
+[[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/os-class.png][file:demo/os-class.png]] 
 
 Evalate expression:
 
 #+BEGIN_SRC lisp
-($ (:outfile "ucase.png")
-   (& (:rankdir :LR)
-      (->> (actor "user")
-           (ucas "Use Emacs")
-           (ucas "Programing")
-           (ucas "Play game"))
-      (-dep- "extend"
-             (@name "Programing")
-             (@name "Use Emacs"))))
+(dml-create-graph "coder-case" (:rankdir :LR)
+  (->> (actor "coder")
+       (ucas "Use Emacs") (ucas "Programing") (ucas "Play game"))
+  (-dep- "extend" (@name "Programing") (@name "Use Emacs")))
 #+END_SRC lisp
 
 Will output Image:
 
-[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/ucase.png][file:demo/ucase.png]] 
+[[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/coder-case.png][file:demo/coder-case.png]] 
 
+
+* Reference Table.
+
+** Symbol for Sequence Diagram
+
+| Symbol name        | Type  | Description                                         |
+|--------------------+-------+-----------------------------------------------------|
+| dml-create-sequnce | Macro | Dump sequnce diagram to ps and png file             |
+| &go                | Macro | Define sequnce calls                                |
+| &in                | Macro | Define a call with sub calls                        |
+| &opt               | Macro | Define a optional call with a guard condtion        |
+| &if                | Macro | Define two alternative calls with a guard condition |
+| &loop              | Macro | Defile a call in a loop with a guard condition      |
+
+
+
+** Symbol for Graph Diagram
+
+ | Symbol name           | Type     | Description                                        |
+ |-----------------------+----------+----------------------------------------------------|
+ | dml-create-graph      | Macro    | Dump graph diagram to ps and png file.             |
+ | full-class            | Function | Create a class node whih attributes and methods.   |
+ | attributes, methods   | Function | Define attribute/method list for the full-calss    |
+ | simp-class            | Function | Return a class node with a simple name in the box. |
+ | with-method           | Macro    | Create to define share methods for classes.        |
+ | actor                 | Function | Create a stick man as actor.                       |
+ | pack                  | Function | Create a package node.                             |
+ | ucas                  | Function | Create use case node.                              |
+ | comp                  | Function | Create component node                              |
+ | @name                 | Function | Reference pre-defined node by name                 |
+ | ->, ->>               | Function | Define a arrow edge: 1-to-1, 1-to-n                |
+ | -dep-, -dep-*, -dep-- | Function | Define dependcy edge: 1-to-1, 1-to-n, 1-by-1       |
+ | -com-, com-*          | Function | Define composition edge: 1-to-1, 1-to-n            |
+ | -agg-, -agg-*         | Function | Define a aggregation edge: 1-to-1, 1-to-n          |
+ | -genby-,genby*        | Function | Define generalize edge: 1-to-1, 1-to-n             |
