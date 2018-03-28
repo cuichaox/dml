@@ -4,7 +4,7 @@ Diagram Make Language for Common Lisp.  You can look DML as Domain Specific Lang
 
 * Install
 
-If you use quicklisp. To install dml to '<quicklisp home pash name>/local-projects/', in your shell:
+If you use quicklisp. To install dml to '~/quicklisp/local-projects/', in your shell:
 #+BEGIN_SRC shell
 $ cd ~/quicklisp/local-projects/
 $ git clone https://github.com/cuichaox/dml.git
