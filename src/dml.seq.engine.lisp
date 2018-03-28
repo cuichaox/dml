@@ -14,14 +14,14 @@
 (defparameter *context-sequnce-attrs*
   `(:font-size 20
     :line-with 1.0
-    :background-color ,(rgba 1.0 1.0 1.0 1.0)
-    :fore-normal-color ,(rgba 0.0 0.0 0.0 1.0)
-    :fore-dim-color ,(rgba 0.5 0.5 0.6 1.0)))
+    :background-color (1.0 1.0 1.0 1.0)
+    :fore-normal-color (0.0 0.0 0.0 1.0)
+    :fore-dim-color (0.5 0.5 0.6 1.0)))
 
 ;;参数
-(defconstant +min-x-margin+ 12.0)
-(defconstant +inner-margin+ 12.0)
-(defconstant +min-y-margin+ 18.0)
+(defconstant +min-x-margin+ 8.0)
+(defconstant +inner-margin+ 6.0)
+(defconstant +min-y-margin+ 10.0)
 (defconstant +half-bar-width+ 4.0)
 
 ;;忽略告警使用的工具函数
@@ -293,7 +293,7 @@
            (restore))))
 
 (defun draw-arraw-cap-line-upside (fx fy tx ty)
-  (if (< fx tx)
+  (if (> fx tx)
       (draw-arraw-cap-line-left fx fy tx ty)
       (draw-arraw-cap-line-right fx fy tx ty)))
   
@@ -380,7 +380,7 @@
     (progn (move-to from-x from-y)
            (curve-to  x1 y1 x2 y2 x3 y3)
            (stroke)
-           (draw-arraw-cap x2 y2 x3 y3)
+           (draw-arraw-cap-for-msg msg x2 y2 x3 y3)
            (draw-text-start-at (label msg) from-x from-y))))
 
 (defmethod draw-dml-element ((msg ret-call))
@@ -429,6 +429,9 @@
        do  (fit-to-grid obj))
     (fit-to-grid *context-message*)))
 
+(defun helper-set-source-rgba (r g b a)
+  (set-source-rgba r g b a))
+
 (defun make-sequnce-diagram (name msg)
   (let* ((*context-message*  msg)
          (grid-hsize (length *context-objects*))
@@ -440,9 +443,9 @@
     (set-font-size (getf *context-sequnce-attrs* :font-size))
     (dock-all-to-grid)
     (ps-surface-set-size ps-surface (get-width *context-grid*) (get-height *context-grid*))
-    (set-source-color (getf *context-sequnce-attrs* :backgroud-color))
+    (apply #'helper-set-source-rgba (getf *context-sequnce-attrs* :background-color))
     (paint)
-    (set-source-color (getf *context-sequnce-attrs* :fore-normal-color))
+    (apply #'helper-set-source-rgba (getf *context-sequnce-attrs* :fore-normal-color))
     (set-line-width (getf *context-sequnce-attrs* :line-with))
     (loop
        for obj in *context-objects*

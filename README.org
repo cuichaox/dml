@@ -30,8 +30,23 @@ To run Examples, load dml system and change current package to 'dml'.
 Evalate expression:
 
 #+BEGIN_SRC lisp
+(dml-create-sequnce "legend" ()
+  (&go "==>ObjectA.SyncMsg1()/ret1"
+       (&in "==>ObjectA.SyncMsg2()/ret2" "==>ObjectB.SyncMsg2.1()/ret2.1")))       
+#+END_SRC
+
+Will output image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/legend.png][file:demo/legend.png]] 
+
+Evalate expression:
+
+#+BEGIN_SRC lisp
 (dml-create-graph "dml-component" (:rankdir :LR)
-  (-dep-- "use" (comp "DML") (comp "donuts") (comp "Graphviz")))
+  (-dep-- "use"
+          (comp "DML")
+          (comp "donuts")
+          (comp "Graphviz")))
 #+END_SRC
 
 Will output image:
@@ -42,11 +57,18 @@ Evalate expression:
 #+BEGIN_SRC lisp
 (dml-create-graph "os-class" ()
   (with-method ("+ play () : Love" "+ work () : Hate")
-    (-genby-* (full-class "OS" "abstract"
-                          (attributes "- name : String" "- born : Date"))
-              (full-class "Linux") (full-class "Android")
-              (full-class "Apple") (full-class "Windows"))
-    (-dep- "from" (@name "Android") (@name"Linux"))))
+    (-genby-*
+     (full-class "OS"
+                 "abstract"
+                 (attributes "- name : String"
+                             "- born : Date"))
+     (full-class "Linux")
+     (full-class "Android")
+     (full-class "Apple")
+     (full-class "Windows"))
+    (-dep- "from"
+           (@name "Android")
+           (@name"Linux"))))
 #+END_SRC
 
 Will output Image:
@@ -58,8 +80,12 @@ Evalate expression:
 #+BEGIN_SRC lisp
 (dml-create-graph "coder-case" (:rankdir :LR)
   (->> (actor "coder")
-       (ucas "Use Emacs") (ucas "Programing") (ucas "Play game"))
-  (-dep- "extend" (@name "Programing") (@name "Use Emacs")))
+       (ucas "Use Emacs")
+       (ucas "Programing")
+       (ucas "Play game"))
+  (-dep- "extend"
+         (@name "Programing")
+         (@name "Use Emacs")))
 #+END_SRC lisp
 
 Will output Image:
@@ -67,7 +93,8 @@ Will output Image:
 [[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/coder-case.png][file:demo/coder-case.png]] 
 
 
-* Reference Table.
+* Reference 
+
 
 ** Symbol for Sequence Diagram
 
@@ -101,3 +128,4 @@ Will output Image:
  | -com-, com-*          | Function | Define composition edge: 1-to-1, 1-to-n            |
  | -agg-, -agg-*         | Function | Define a aggregation edge: 1-to-1, 1-to-n          |
  | -genby-,genby*        | Function | Define generalize edge: 1-to-1, 1-to-n             |
+
