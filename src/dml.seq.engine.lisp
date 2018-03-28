@@ -365,7 +365,7 @@
            (move-to from-x from-y)
            (line-to to-x to-y)
            (stroke)
-           (draw-arraw-cap from-x from-y to-x to-y)
+           (draw-arraw-cap-for-msg msg from-x from-y to-x to-y)
            (if to-right
                (draw-text-start-at (label msg)  (+ +inner-margin+ from-x) from-y)
                (draw-text-end-to (label msg) (- from-x +inner-margin+) from-y)))))
