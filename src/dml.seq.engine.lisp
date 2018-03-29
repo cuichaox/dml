@@ -24,9 +24,9 @@
     :fore-dim-rgba (0.5 0.5 0.6 1.0)))
 
 ;;参数
-(defconstant +min-x-margin+ 8.0)
-(defconstant +inner-margin+ 6.0)
-(defconstant +min-y-margin+ 10.0)
+(defconstant +min-x-margin+ 10.0)
+(defconstant +inner-margin+ 8.0)
+(defconstant +min-y-margin+ 16.0)
 (defconstant +half-bar-width+ 4.0)
 
 ;;忽略告警使用的工具函数
@@ -88,16 +88,31 @@
 (defgeneric fit-to-grid (element))
 (defgeneric draw-dml-element (element))
 
+;;得到对象头的大小
+(defun object-header-half-space (obj)
+  (let* ((name-ext (igw (get-text-extents (name obj))))
+         (half-hspace (+ +inner-margin+ (/ (text-width name-ext) 2)))
+         (half-vspace (+ +inner-margin+ (/ (text-height name-ext) 2))))
+    (cons half-hspace half-vspace)))
+
 ;;得到消息边界，的边距
 (defgeneric up-extra-space (msg))
 (defgeneric left-extra-space(msg))
 
-(defmethod up-extra-space ((msg message)) 0)
+(defmethod up-extra-space ((msg message))
+  (up-extra-space (car (all-call-messages msg))))
+
 (defmethod left-extra-space((msg message)) 0)
 
 (defmethod up-extra-space ((msg call-message))
   (let* ((label-ext (igw (get-text-extents (label msg)))))
-    (+ +min-y-margin+ (text-height label-ext))))
+    (+ (* 1.2 +min-y-margin+) (text-height label-ext))))
+
+(defmethod up-extra-space ((msg new-call))
+  (max (call-next-method)       
+       (+ (* 1.2 +min-y-margin+)
+          (cdr (object-header-half-space (to-object msg))))))
+
 
 (defmethod up-extra-space ((msg guard-message))
   (let* ((guard-ext (igw (get-text-extents (guard msg)))))
@@ -156,13 +171,15 @@
   (get-call-v-index (car (last (all-call-messages msg)))))
 
 ;;对象的大小
+
+
 (defmethod fit-to-grid ((obj object))
-  (let* ((name-ext (igw (get-text-extents (name obj))))
+  (let* ((half-space (object-header-half-space obj))
          (h-index (get-object-h-index obj))
          (new-by (new-message obj))
          (v-index (if new-by (get-call-v-index new-by) 0))
-         (half-hspace (+ +inner-margin+ +min-x-margin+ (/ (text-width name-ext) 2)))
-         (half-vspace (+ +inner-margin+ +min-y-margin+ (/ (text-height name-ext) 2))))
+         (half-hspace (+ +min-x-margin+ (car half-space)))
+         (half-vspace (+ +min-y-margin+ (cdr half-space))))
     (fit-left *context-grid* h-index half-hspace)
     (fit-right *context-grid* h-index half-hspace)
     (fit-up *context-grid* v-index half-vspace)
@@ -225,6 +242,9 @@
 (defun draw-frame(name fx fy tx ty)
   (let ((ext (igw (get-text-extents name)))
         (small-margin (/ +inner-margin+ 3)))
+    (save)
+    (apply #'set-source-rgba (getf *context-sequnce-attrs* :fore-dim-rgba))
+    ;(set-font-size (/ (getf *context-sequnce-attrs* :font-size) 1.6))
     (rectangle fx fy (- tx fx) (- ty fy))
     (stroke)
     (move-to (+ small-margin (- fx (text-x-bearing ext)))
@@ -233,7 +253,8 @@
     (move-to   fx (+ fy (* 2 small-margin) (text-height ext)))
     (rel-line-to (+ (* 2 small-margin) (text-width ext))  0)
     (rel-line-to (* 2 small-margin) (* -1 (+ (* 2 small-margin)  (text-height ext))))
-    (stroke)))
+    (stroke)
+    (restore)))
 
 
 ;;以制定坐标为起点绘制文本
@@ -272,14 +293,17 @@
   
 
 (defun draw-life-cycle-line (x fy ey bars)
-  (let ((cy fy))   
-   (dolist (bar bars)
-     (draw-dash-line x cy x (car bar))
-     (rectangle (- x +half-bar-width+) (car bar)
-                (* 2 +half-bar-width+) (- (cdr bar) (car bar)))
-     (stroke)
-     (setf cy (cdr bar)))
-   (draw-dash-line x cy x ey)))   
+  (let ((cy fy))
+    (save)
+    (apply #'set-source-rgba (getf *context-sequnce-attrs* :fore-dim-rgba))
+    (dolist (bar bars)
+      (draw-dash-line x cy x (car bar))
+      (rectangle (- x +half-bar-width+) (car bar)
+                 (* 2 +half-bar-width+) (- (cdr bar) (car bar)))
+      (stroke)
+      (setf cy (cdr bar)))
+    (draw-dash-line x cy x ey)
+    (restore)))
 
 ;;绘制不同类型的箭头
 (defun draw-arraw-cap-line-left (fx fy tx ty)
@@ -372,8 +396,13 @@
                    (get-x-by-index *context-grid* (get-object-h-index to-obj))))
          (to-y from-y)
          (to-right (call-to-right-p msg))
+         (object-half-space (if (and to-obj
+                                     (= (get-call-v-index msg)
+                                        (get-object-v-index to-obj)))
+                                (car (object-header-half-space to-obj))
+                                +half-bar-width+))
          (fx-offset (if to-right +half-bar-width+ (* -1 +half-bar-width+)))
-         (tx-offset (* -1 fx-offset)))
+         (tx-offset (if to-right (* -1 object-half-space) object-half-space)))         
     (progn (incf from-x fx-offset)
            (incf to-x tx-offset)
            (move-to from-x from-y)
@@ -389,13 +418,13 @@
          (from-x (+ +half-bar-width+ (get-x-by-index *context-grid* (get-object-h-index from-obj))))
          (from-y (get-y-by-index *context-grid* (get-call-v-index msg)))
          (x1 (+ from-x (* 4 +min-x-margin+)))  (y1 from-y)
-         (x2 x1)  (y2 (+ y1 (* 3 +min-y-margin+)))
-         (x3 from-x) (y3 (+ from-y +min-y-margin+)))
+         (x2 x1)  (y2 (+ y1 +min-y-margin+))
+         (x3 from-x) (y3 (+ from-y (/ +min-y-margin+ 3))))
     (progn (move-to from-x from-y)
            (curve-to  x1 y1 x2 y2 x3 y3)
            (stroke)
            (draw-arraw-cap-for-msg msg x2 y2 x3 y3)
-           (draw-text-start-at (label msg) from-x from-y))))
+           (draw-text-start-at (label msg) (+ +min-x-margin+ from-x) from-y))))
 
 (defmethod draw-dml-element ((msg ret-call))
   (save)
@@ -413,13 +442,18 @@
      do (draw-dml-element call)))
 
 (defmethod draw-dml-element ((msg guard-message))
-  (progn (draw-text-end-to (guard msg)
-                           (- (get-x-by-index *context-grid* (1+ (left-side-index msg)))
-                              +min-x-margin+)
-                           (+ (- (get-y-by-index *context-grid* (up-side-index msg))
-                                 (up-extra-space msg))
-                              (text-height (igw (get-text-extents (guard msg))))))
-         (draw-dml-element (the-message msg))))
+  (progn
+    (save)
+    (apply #'set-source-rgba (getf *context-sequnce-attrs* :fore-dim-rgba))
+    (draw-text-end-to (guard msg)
+                      (- (get-x-by-index *context-grid* (1+ (left-side-index msg)))
+                         +min-x-margin+)
+                      (+ (- (get-y-by-index *context-grid* (up-side-index msg))
+                            (up-extra-space msg))
+                         (text-height (igw (get-text-extents (guard msg))))))
+    (restore)
+    (draw-dml-element (the-message msg))))
+    
                            
 
 (defmethod draw-dml-element ((msg frame-guard))

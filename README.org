@@ -27,8 +27,10 @@ To run Examples, load dml system and change current package to 'dml'.
 (use-package :dml)
 #+END_src 
 
- + Define a synchronous message with retrun value as a string in format: '==>' <object name> '.' <message label> '/' <return label>
- + Define a asynchronous message as a string in format: '-->' <object name> '.' <message label>
+ + Define a synchronous message with retrun value in a formated string : '==>' <object name> '.' <message label> '/' <return label>
+ + Define a asynchronous message in a formated string: '-->' <object name> '.' <message label>
+ + Define a new message in a fromated string : 'n->' <object> '.' <object name > '.' <mesasge label>
+ + Any object name begin with '!' is a active object
  + Define a sequence list of messages in macro '&prog'
  + Define a message with follwing sub-messages in mcaro '&chain'
  + Define a optional/alternative frame with guard condtion and  messages in macro '&opt' or '&if'
@@ -45,9 +47,41 @@ Evalate expression:
 
 Will output image:
 
-[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/legend.png][file:demo/legend.png
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/legend.png][file:demo/legend.png]] 
 
-]] 
+
+Evalate Expression:
+
+#+BGIN_SRC lisp
+(dml-create-sequence "nested" ()
+  (&chain "==>aComputer.play()/"
+          (&prog (&chain "==>emacs.run()/"
+                         "==>slime.load()/")
+                 (&chain "==>slime.Hacking()/"
+                         (&chain "==>slime.LookupHyperSpec()"
+                                 (&prog "==>chrome:Explorer.Start()/"
+                                        "==>chrome:Explorer.OpenSpec()/"))))))
+#+END_SRC
+
+Will output image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/nested.png][file:demo/nested.png]] 
+
+Evalate Expression:
+
+#+BGIN_SRC lisp
+(dml-create-sequence "control" ()
+  (&chain "==>:PersonFile.LoadAllGoodMan()/"
+          (&loop "[ hasNext ]"
+                 (&prog "==>:PersonFile.readNext()/"
+                        (&if "[ Is Good Man ]"
+                             (&prog "n=>aManObj.new"
+                                    "==>manPool.register()/"))))))
+#+END_SRC
+
+Will output image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/control.png][file:demo/control.png]] 
 
 Evalate expression:
 
@@ -59,9 +93,12 @@ Evalate expression:
           (comp "Graphviz")))
 #+END_SRC
 
+
 Will output image:
 
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml-component.png][file:demo/dml-component.png]] 
+
+
 
 Evalate expression:
 #+BEGIN_SRC lisp
