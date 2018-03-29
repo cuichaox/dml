@@ -37,7 +37,7 @@ Evalate expression:
 
 Will output image:
 
-[[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/legend.png][file:demo/legend.png]] 
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/legend.png][file:demo/legend.png]] 
 
 Evalate expression:
 
@@ -51,7 +51,7 @@ Evalate expression:
 
 Will output image:
 
-[[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/dml-component.png][file:demo/dml-component.png]] 
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml-component.png][file:demo/dml-component.png]] 
 
 Evalate expression:
 #+BEGIN_SRC lisp
@@ -73,7 +73,7 @@ Evalate expression:
 
 Will output Image:
 
-[[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/os-class.png][file:demo/os-class.png]] 
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/os-class.png][file:demo/os-class.png]] 
 
 Evalate expression:
 
@@ -90,7 +90,7 @@ Evalate expression:
 
 Will output Image:
 
-[[https://raw.githubusercontent.com/cuichaox/dml/hacking/demo/coder-case.png][file:demo/coder-case.png]] 
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/coder-case.png][file:demo/coder-case.png]] 
 
 
 * Reference 
