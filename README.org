@@ -18,24 +18,28 @@ will automatically downlaod to local disk before the first loading.
 (ql:quickload :dml)
 #+END_SRC 
 
-* Examples
+* Quick start by examples
 
-To run Examples, load dml system and change current package to 'dml'. 
+To run examples, load dml system and change current package to 'dml'. 
 
 #+BEGIN_SRC lisp
 (ql:quickload :dml)
 (use-package :dml)
 #+END_src 
 
- + Define a synchronous message with retrun value in a formated string : '==>' <object name> '.' <message label> '/' <return label>
- + Define a asynchronous message in a formated string: '-->' <object name> '.' <message label>
- + Define a new message in a fromated string : 'n->' <object> '.' <object name > '.' <mesasge label>
+** Quick Start for Sequence Diagram
+
+ + A synchronous message & retrun in a formated string : '==>' <object name> '.' <message label> '/' <return label>
+ + A asynchronous message in a formated string: '-->' <object name> '.' <message label>
+ + A new message in a fromated string : 'n->' <object> '.' <object name > '.' <mesasge label>
  + Any object name begin with '!' is a active object
- + Define a sequence list of messages in macro '&prog'
- + Define a message with follwing sub-messages in mcaro '&chain'
- + Define a optional/alternative frame with guard condtion and  messages in macro '&opt' or '&if'
- + Define a loop frame with guard and message in macro '&loop'
+ + A sequence list of messages in macro '&prog'
+ + A message with follwing sub-messages in mcaro '&chain'
+ + A optional/alternative frame with guard condtion and  messages in macro '&opt' or '&if'
+ + A loop frame with guard and message in macro '&loop'
  + Any macro ('&prog' ,'&chain', '&opt', '&if' and '&loop') can be nested in each other
+
+** Examples of Sequence Diagram
 
 Evalate expression:
 
@@ -52,7 +56,7 @@ Will output image:
 
 Evalate Expression:
 
-#+BGIN_SRC lisp
+#+BEGIN_SRC lisp
 (dml-create-sequence "nested" ()
   (&chain "==>aComputer.play()/"
           (&prog (&chain "==>emacs.run()/"
@@ -69,7 +73,7 @@ Will output image:
 
 Evalate Expression:
 
-#+BGIN_SRC lisp
+#+BEGIN_SRC lisp
 (dml-create-sequence "control" ()
   (&chain "==>:PersonFile.LoadAllGoodMan()/"
           (&loop "[ hasNext ]"
@@ -82,6 +86,8 @@ Evalate Expression:
 Will output image:
 
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/control.png][file:demo/control.png]] 
+
+** Examples of graph Diagram
 
 Evalate expression:
 
