@@ -31,8 +31,8 @@
            #:loop-frame
            #:alt-group
            #:*context-objects*
-           #:&go
-           #:&in
+           #:&prog
+           #:&chain
            #:&opt
            #:&if
            #:&loop))
@@ -178,7 +178,7 @@
       (values dir-or-msg nil)
       (make-by-director *context-current-object* dir-or-msg)))
 
-(defmacro &go (&rest dir-or-msg-s)
+(defmacro &prog (&rest dir-or-msg-s)
   (if (null dir-or-msg-s)
       `(make-instance 'group-message)
       (let ((first (car dir-or-msg-s))
@@ -192,7 +192,7 @@
             `(let (($call ,first))
                (push-to $call (&go ,@others)))))))
 
-(defmacro &in (&rest dir-or-msg-s)
+(defmacro &chain (&rest dir-or-msg-s)
   (if (null dir-or-msg-s)
       `(make-instance 'group-message)
       (let ((first (car dir-or-msg-s))

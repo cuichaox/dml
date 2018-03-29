@@ -1,13 +1,12 @@
 
 (uiop:define-package :dml
     (:mix #:dml.graph
-          #:dml.seq.core
           #:dml.seq.engine
           #:cl)
   (:export   #:dml-create-graph
-             #:dml-create-sequnce
-             #:&go
-             #:&in
+             #:dml-create-sequence
+             #:&prog
+             #:&chain
              #:&opt
              #:&if
              #:&loop
@@ -44,7 +43,7 @@
      ($ (:outfile ,(concatenate 'string path-name-prefix ".png") :show nil)
         graph)))
  
-(defmacro dml-create-sequnce (path-name-prefix (&rest sequnce-attrs) &body any-message)
+(defmacro dml-create-sequence (path-name-prefix (&rest sequnce-attrs) &body any-message)
   "Dump sequnce diargram to files (ps & png)."
   `(let ((*context-objects* nil)
          (*context-sequnce-attrs* (append ,sequnce-attrs *context-sequnce-attrs*)))

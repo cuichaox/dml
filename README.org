@@ -31,8 +31,8 @@ Evalate expression:
 
 #+BEGIN_SRC lisp
 (dml-create-sequnce "legend" ()
-  (&go "==>ObjectA.SyncMsg1()/ret1"
-       (&in "==>ObjectA.SyncMsg2()/ret2" "==>ObjectB.SyncMsg2.1()/ret2.1")))       
+  (&prog "==>ObjectA.SyncMsg1()/ret1"
+       (&chain "==>ObjectA.SyncMsg2()/ret2" "==>ObjectB.SyncMsg2.1()/ret2.1")))       
 #+END_SRC
 
 Will output image:
@@ -101,8 +101,8 @@ Will output Image:
 | Symbol name        | Type  | Description                                         |
 |--------------------+-------+-----------------------------------------------------|
 | dml-create-sequnce | Macro | Dump sequnce diagram to ps and png file             |
-| &go                | Macro | Define sequnce calls                                |
-| &in                | Macro | Define a call with sub calls                        |
+| &prog              | Macro | Define sequnce calls                                |
+| &chain             | Macro | Define a call with sub calls                        |
 | &opt               | Macro | Define a optional call with a guard condtion        |
 | &if                | Macro | Define two alternative calls with a guard condition |
 | &loop              | Macro | Defile a call in a loop with a guard condition      |

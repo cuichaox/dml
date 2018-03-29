@@ -4,6 +4,11 @@
           #:dml.seq.grid
           #:cl)
   (:export   #:make-sequnce-diagram
+             #:&prog
+             #:&chain
+             #:&if
+             #:&loop
+             #:*context-objects*
              #:*context-sequnce-attrs*)
   (:documentation "doc"))
 
@@ -328,7 +333,7 @@
 
 ;;根据调用类型选择绘制方法
 (defun draw-arraw-cap-for-msg(msg fx fy tx ty)
-  (cond ((and (typep msg 'syn-call) (typep msg 'ret-call)) (draw-arraw-cap-tri fx fy tx ty))
+  (cond ((or (typep msg 'syn-call) (typep msg 'ret-call)) (draw-arraw-cap-tri fx fy tx ty))
         ((typep msg 'asy-call) (draw-arraw-cap-line-upside fx fy tx ty))
         (t (draw-arraw-cap-line-full fx fy tx ty))))
           

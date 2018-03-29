@@ -14,5 +14,5 @@
                   (:file "src/dml.seq.engine"
                          :depends-on ("src/dml.seq.core" "src/dml.seq.grid"))
                   (:file "src/dml"
-                         :depends-on ("src/dml.graph"))))
+                         :depends-on ("src/dml.graph" "src/dml.seq.engine"))))
                  
