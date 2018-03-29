@@ -6,7 +6,11 @@
 
 (dml-create-sequence "legend" ()
   (&prog "==>ObjectA.SyncMsg1()/ret1" 
-       (&chain "==>ObjectA.SyncMsg2()/ret2"
-            "==>ObjectB.SyncMsg2.1()/ret2.1")))          
+         (&chain "==>ObjectA.SyncMsg2()/ret2"
+                 "==>ObjectB.SyncMsg2.1()/ret2.1"
+                 "-->!ActiveObjectC.AsyMesg2.2()")))
+         
+         
             
-   
+(dml-create-sequence "nested" ()
+  (&chain "==>open"))

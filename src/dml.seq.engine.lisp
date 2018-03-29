@@ -19,9 +19,9 @@
 (defparameter *context-sequnce-attrs*
   `(:font-size 20
     :line-with 1.0
-    :background-color (1.0 1.0 1.0 1.0)
-    :fore-normal-color (0.0 0.0 0.0 1.0)
-    :fore-dim-color (0.5 0.5 0.6 1.0)))
+    :background-rgba (1.0 1.0 1.0 1.0)
+    :fore-normal-rgba (0.0 0.0 0.0 1.0)
+    :fore-dim-rgba (0.5 0.5 0.6 1.0)))
 
 ;;参数
 (defconstant +min-x-margin+ 8.0)
@@ -58,11 +58,20 @@
             (compress-caller-phases (cdr phases))))))
 
 (defun get-active-bars (obj)
- (let ((ret nil))
-   (reverse (dolist (bar (compress-caller-phases (get-caller-phases obj)) ret)
-              (push (cons (get-y-by-index *context-grid* (car bar))
-                          (get-y-by-index *context-grid* (cdr bar)))
-                    ret)))))
+  (if (is-active obj)
+      (let ((begin-y (get-y-by-index *context-grid*
+                                     (1+ (if (new-message obj)
+                                             (get-call-v-index (new-message obj))
+                                             0))))
+            (end-y (if (end-message obj)
+                       (get-call-v-index (end-message obj))
+                       (- (get-height *context-grid*) +min-y-margin+))))
+        (list (cons begin-y end-y)))
+      (let ((ret nil))
+        (reverse (dolist (bar (compress-caller-phases (get-caller-phases obj)) ret)
+                   (push (cons (get-y-by-index *context-grid* (car bar))
+                               (get-y-by-index *context-grid* (cdr bar)))
+                         ret))))))
 
 (defun get-object-h-index (obj)
   (or (position obj *context-objects*)
@@ -434,8 +443,6 @@
        do  (fit-to-grid obj))
     (fit-to-grid *context-message*)))
 
-(defun helper-set-source-rgba (r g b a)
-  (set-source-rgba r g b a))
 
 (defun make-sequnce-diagram (name msg)
   (let* ((*context-message*  msg)
@@ -448,9 +455,9 @@
     (set-font-size (getf *context-sequnce-attrs* :font-size))
     (dock-all-to-grid)
     (ps-surface-set-size ps-surface (get-width *context-grid*) (get-height *context-grid*))
-    (apply #'helper-set-source-rgba (getf *context-sequnce-attrs* :background-color))
+    (apply #'set-source-rgba (getf *context-sequnce-attrs* :background-rgba))
     (paint)
-    (apply #'helper-set-source-rgba (getf *context-sequnce-attrs* :fore-normal-color))
+    (apply #'set-source-rgba (getf *context-sequnce-attrs* :fore-normal-rgba))
     (set-line-width (getf *context-sequnce-attrs* :line-with))
     (loop
        for obj in *context-objects*

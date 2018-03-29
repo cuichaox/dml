@@ -188,9 +188,9 @@
                (when $ret
                  (appendf (callers (to-object $call))
                           (list (cons $call $ret))))
-               (push-to $call (push-to $ret (&go ,@others))))
+               (push-to $call (push-to $ret (&prog ,@others))))
             `(let (($call ,first))
-               (push-to $call (&go ,@others)))))))
+               (push-to $call (&prog ,@others)))))))
 
 (defmacro &chain (&rest dir-or-msg-s)
   (if (null dir-or-msg-s)
@@ -205,9 +205,9 @@
                (append-to $ret
                        (push-to $call
                                (let ((*context-current-object* (last-object $call)))
-                                 (&in ,@others)))))
+                                 (&chain ,@others)))))
             `(let (($call ,first))
-               (push-to $call (&in ,@others)))))))
+               (push-to $call (&chain ,@others)))))))
 
 (defmacro &opt (guard msg)
   `(make-instance 'opt-frame
