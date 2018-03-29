@@ -12,7 +12,7 @@ $ git clone https://github.com/cuichaox/dml.git
 
 System 'dml' will then be loadbale via (ql:quickload :dml). 
 The systems that dml depended on (donuts, cl-cario2 etc.) 
-will automatically downlaod to local disk before the first loading.
+will automatically download to local disk on the first loading.
 
 #+BEGIN_SRC lisp
 (ql:quickload :dml)

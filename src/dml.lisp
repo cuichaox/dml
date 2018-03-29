@@ -46,6 +46,6 @@
 (defmacro dml-create-sequence (path-name-prefix (&rest sequnce-attrs) &body any-message)
   "Dump sequnce diargram to files (ps & png)."
   `(let ((*context-objects* nil)
-         (*context-sequnce-attrs* (append ,sequnce-attrs *context-sequnce-attrs*)))
+         (*context-sequnce-attrs* (append ',sequnce-attrs *context-sequnce-attrs*)))
      (make-sequnce-diagram ,path-name-prefix ,@any-message)))
   
