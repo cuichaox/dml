@@ -31,6 +31,7 @@
              #:-dep-
              #:-dep-*
              #:->>
+             #:-tree
              #:-dep--))
 
 (in-package :dml)
@@ -48,4 +49,5 @@
   `(let ((*context-objects* nil)
          (*context-sequnce-attrs* (append ',sequnce-attrs *context-sequnce-attrs*)))
      (make-sequnce-diagram ,path-name-prefix ,@any-message)))
-  
+
+

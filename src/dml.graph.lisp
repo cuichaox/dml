@@ -25,6 +25,7 @@
             #:-agg-*
             #:-dep-
             #:->>
+            #:-tree
             #:-dep-*
             #:-dep--))
            
@@ -177,6 +178,10 @@
 (defun -lin- (node1 node2)
   (-> node1 node2 :dir "none"))
 
-
-
-
+;;tree
+(defmacro -tree (parent &rest children)
+  (let ((sons (loop for son in children
+                 collect (if (consp son) (car son) son)))
+        (subcalls (loop for son in children
+                    when (consp son) collect (push '-tree son))))
+    `(&& (->> ,parent ,@sons) ,@subcalls)))

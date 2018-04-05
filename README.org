@@ -1,6 +1,7 @@
 * Introduction
 
-Diagram Make Language for Common Lisp.  You can look DML as Domain Specific Language for drawing UML. 
+Diagram Make Language for Common Lisp.  
+You can look DML as Domain Specific Language for drawing UML. 
 
 * Install
 
@@ -24,22 +25,22 @@ To run examples, load dml system and change current package to 'dml'.
 
 #+BEGIN_SRC lisp
 (ql:quickload :dml)
-(use-package :dml)
+(use-package :dml) ;; or (in-package :dml)
 #+END_src 
 
 ** Quick Start for Sequence Diagram
 
- + A synchronous message & retrun in a formated string : '==>' <object name> '.' <message label> '/' <return label>
- + A asynchronous message in a formated string: '-->' <object name> '.' <message label>
- + A new message in a fromated string : 'n->' <object> '.' <object name > '.' <mesasge label>
- + Any object name begin with '!' is a active object
- + A sequence list of messages in macro '&prog'
- + A message with follwing sub-messages in mcaro '&chain'
- + A optional/alternative frame with guard condtion and  messages in macro '&opt' or '&if'
- + A loop frame with guard and message in macro '&loop'
- + Any macro ('&prog' ,'&chain', '&opt', '&if' and '&loop') can be nested in each other
+ 1. A synchronous message & retrun in a formated string : '==>' <object name> '.' <message label> '/' <return label>
+ 2. A asynchronous message in a formated string: '-->' <object name> '.' <message label>
+ 3. A new message in a fromated string : 'n->' <object> '.' <object name > '.' <mesasge label>
+ 4. Any object name begin with '!' is a active object
+ 5. A sequence list of messages in macro '&prog'
+ 6. A message with follwing sub-messages in mcaro '&chain'
+ 7. A optional/alternative frame with guard condtion and  messages in macro '&opt' or '&if'
+ 8. A loop frame with guard and message in macro '&loop'
+ 9. Any macro ('&prog' ,'&chain', '&opt', '&if' and '&loop') can be nested in each other
 
-** Examples of Sequence Diagram
+*** Examples of Sequence Diagram
 
 Evalate expression:
 
@@ -89,7 +90,14 @@ Will output image:
 
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/control.png][file:demo/control.png]] 
 
-** Examples of graph Diagram
+** Quick Start for Graph Diargam
+
+1. Define Graph by edges that linked nodes. 
+2. Define nodes by functions ( name of node is the first argument ):'full-class', 'simp-class', 'actor', 'pack', 'ucas', 'comp' 
+3. Get Predefined node by name '@name'.
+4. Define edges by functions (two nodes is arguments): '-dep-', '-com-', '-agg-', '-gen-by-'.
+
+*** Examples of Graph Diagram
 
 Evalate expression:
 
@@ -181,5 +189,5 @@ Will output Image:
  | -dep-, -dep-*, -dep-- | Function | Define dependcy edge: 1-to-1, 1-to-n, 1-by-1       |
  | -com-, com-*          | Function | Define composition edge: 1-to-1, 1-to-n            |
  | -agg-, -agg-*         | Function | Define a aggregation edge: 1-to-1, 1-to-n          |
- | -genby-,genby*        | Function | Define generalize edge: 1-to-1, 1-to-n             |
+ | -genby-,genby-*       | Function | Define generalize edge: 1-to-1, 1-to-n             |
 
