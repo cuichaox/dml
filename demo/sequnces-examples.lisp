@@ -22,9 +22,9 @@
 
 (dml-create-sequence "control" ()
   (&chain "==>:PersonFile.LoadAllGoodMan()/"
-          (&loop "[ hasNext ]"
+          (&loop "[hasNext]"
                  (&prog "==>:PersonFile.readNext()/"
-                        (&if "[ Is Good Man ]"
+                        (&if "[Is Good Man]"
                              (&prog "n=>aManObj.new"
                                     "==>manPool.register()/"))))))
 
