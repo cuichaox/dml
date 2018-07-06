@@ -1,0 +1,198 @@
+* 介绍
+
+DML 就是 Diagram Make Language for Common Lisp. 
+这个东西就是绘制UML图的领域专用语言(DSL). 为什么要搞这样一个东西？
+第一，可能是因为没有找到合适我的UML绘制工具，我个人不太喜欢使用鼠标的拖拽的方式画图。
+在进行对象模型设计的时候，我觉得应该关注与设计本身，布局什么的应该是自动化的。
+我觉得可以尝试使用我习惯的方式（编码）与工具进行交流。
+第二，通过设计一种专用的绘图语言，顺便可以锻炼一下我设计能力。
+无论是序列图还是类图，我都努力寻找最简单的描述形式，实现用最少的代码，绘制最复杂的图。
+为什么要选择使用Common Lisp实现呢？
+第一，我很懒，我不想自己去实现一个编译器或解释器，所以我必须选择一门宿主语言，复用已有的解释器。
+第二，如果选择C/C++/JAVA语言, 我只能考虑实现一个绘图方法库,而依赖Common Lisp的语法可扩展性，
+我可以自由的设计语言了，只是我不得不接受使用S-Expression作为语言的基本形式。
+ 
+
+* 安装说明
+
+现在，DML 已经添加到了quicklisp --如果你了解Common Lisp语言，你一定了解这个事实上默认的包管理。
+直接运行下面的命令，就完成了DML的加载（第一次运行时，会自动下载dml和dml依赖的其他东西，安装到本地）:
+
+#+BEGIN_SRC lisp
+(ql:quickload :dml)
+#+END_SRC 
+
+* 基于例子的快速教程
+
+要运行例子，在加载dml后，导入dml的外部符号。或者切换当前包为dml。
+#+BEGIN_SRC lisp
+(ql:quickload :dml)
+(use-package :dml) ;; or (in-package :dml)
+#+END_src 
+
+** 创建序列图
+
+调用宏dml-create-sequence，创建一个序列图， 只要按照从上到下顺序，指定消息序列。
+为了偷懒，我这里使用了一个格式的字符串定义一个消息。
+
+
+ 1. A synchronous message & retrun in a formated string : '==>' <object name> '.' <message label> '/' <return label>
+ 2. A asynchronous message in a formated string: '-->' <object name> '.' <message label>
+ 3. A new message in a fromated string : 'n->' <object> '.' <object name > '.' <mesasge label>
+ 4. Any object name begin with '!' is a active object
+ 5. A sequence list of messages in macro '&prog'
+ 6. A message with follwing sub-messages in mcaro '&chain'
+ 7. A optional/alternative frame with guard condtion and  messages in macro '&opt' or '&if'
+ 8. A loop frame with guard and message in macro '&loop'
+ 9. Any macro ('&prog' ,'&chain', '&opt', '&if' and '&loop') can be nested
+
+*** Examples of Sequence Diagram
+
+
+#+BEGIN_SRC lisp
+(dml-create-sequence "legend" ()
+  (&prog "==>ObjectA.SyncMsg1()/ret1" 
+         (&chain "==>ObjectA.SyncMsg2()/ret2"
+                 "==>ObjectB.SyncMsg2.1()/ret2.1"
+                 "-->!ActiveObjectC.AsyMesg2.2()")))
+#+END_SRC
+
+Will output image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/legend.png][file:demo/legend.png]] 
+
+
+Evalate Expression:
+
+#+BEGIN_SRC lisp
+(dml-create-sequence "nested" ()
+  (&chain "==>aComputer.play()/"
+          (&prog (&chain "==>emacs.run()/"
+                         "==>slime.load()/")
+                 (&chain "==>slime.Hacking()/"
+                         (&chain "==>slime.LookupHyperSpec()"
+                                 (&prog "==>chrome:Explorer.Start()/"
+                                        "==>chrome:Explorer.OpenSpec()/"))))))
+#+END_SRC
+
+Will output image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/nested.png][file:demo/nested.png]] 
+
+Evalate Expression:
+
+#+BEGIN_SRC lisp
+(dml-create-sequence "control" ()
+  (&chain "==>:PersonFile.LoadAllGoodMan()/"
+          (&loop "[ hasNext ]"
+                 (&prog "==>:PersonFile.readNext()/"
+                        (&if "[ Is Good Man ]"
+                             (&prog "n=>aManObj.new"
+                                    "==>manPool.register()/"))))))
+#+END_SRC
+
+Will output image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/control.png][file:demo/control.png]] 
+
+** Quick Start for Graph Diargam
+
+1. Define Graph by edges that linked nodes. 
+2. Define nodes by functions ( name of node is the first argument ):'full-class', 'simp-class', 'actor', 'pack', 'ucas', 'comp' 
+3. Get Predefined node by name '@name'.
+4. Define edges by functions (two nodes is arguments): '-dep-', '-com-', '-agg-', '-gen-by-'.
+
+*** Examples of Graph Diagram
+
+Evalate expression:
+
+#+BEGIN_SRC lisp
+(dml-create-graph "dml-component" (:rankdir :LR)
+  (-dep-- "use"
+          (comp "DML")
+          (comp "donuts")
+          (comp "Graphviz")))
+#+END_SRC
+
+
+Will output image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml-component.png][file:demo/dml-component.png]] 
+
+
+
+Evalate expression:
+#+BEGIN_SRC lisp
+(dml-create-graph "os-class" ()
+  (with-method ("+ play () : Love" "+ work () : Hate")
+    (-genby-*
+     (full-class "OS"
+                 "abstract"
+                 (attributes "- name : String"
+                             "- born : Date"))
+     (full-class "Linux")
+     (full-class "Android")
+     (full-class "Apple")
+     (full-class "Windows"))
+    (-dep- "from"
+           (@name "Android")
+           (@name"Linux"))))
+#+END_SRC
+
+Will output Image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/os-class.png][file:demo/os-class.png]] 
+
+Evalate expression:
+
+#+BEGIN_SRC lisp
+(dml-create-graph "coder-case" (:rankdir :LR)
+  (->> (actor "coder")
+       (ucas "Use Emacs")
+       (ucas "Programing")
+       (ucas "Play game"))
+  (-dep- "extend"
+         (@name "Programing")
+         (@name "Use Emacs")))
+#+END_SRC lisp
+
+Will output Image:
+
+[[https://raw.githubusercontent.com/cuichaox/dml/master/demo/coder-case.png][file:demo/coder-case.png]] 
+
+
+* Reference 
+
+
+** Symbol for Sequence Diagram
+
+| Symbol name        | Type  | Description                                         |
+|--------------------+-------+-----------------------------------------------------|
+| dml-create-sequnce | Macro | Dump sequnce diagram to ps and png file             |
+| &prog              | Macro | Define sequnce calls                                |
+| &chain             | Macro | Define a call with sub calls                        |
+| &if                | Macro | Define two alternative calls with a guard condition |
+| &loop              | Macro | Defile a call in a loop with a guard condition      |
+
+
+
+** Symbol for Graph Diagram
+
+ | Symbol name           | Type     | Description                                        |
+ |-----------------------+----------+----------------------------------------------------|
+ | dml-create-graph      | Macro    | Dump graph diagram to ps and png file.             |
+ | full-class            | Function | Create a class node whih attributes and methods.   |
+ | attributes, methods   | Function | Define attribute/method list for the full-calss    |
+ | simp-class            | Function | Return a class node with a simple name in the box. |
+ | with-method           | Macro    | Create to define share methods for classes.        |
+ | actor                 | Function | Create a stick man as actor.                       |
+ | pack                  | Function | Create a package node.                             |
+ | ucas                  | Function | Create use case node.                              |
+ | comp                  | Function | Create component node                              |
+ | @name                 | Function | Reference pre-defined node by name                 |
+ | ->, ->>               | Function | Define a arrow edge: 1-to-1, 1-to-n                |
+ | -dep-, -dep-*, -dep-- | Function | Define dependcy edge: 1-to-1, 1-to-n, 1-by-1       |
+ | -com-, com-*          | Function | Define composition edge: 1-to-1, 1-to-n            |
+ | -agg-, -agg-*         | Function | Define a aggregation edge: 1-to-1, 1-to-n          |
+ | -genby-,genby-*       | Function | Define generalize edge: 1-to-1, 1-to-n             |
+
