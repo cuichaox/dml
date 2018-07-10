@@ -1,7 +1,8 @@
 * Introduction
 
-Diagram Make Language for Common Lisp.  
-You can look DML as Domain Specific Language for drawing UML. 
+Diagram Make Language for Common Lisp.You can look DML as Domain Specific Language for drawing UML. 
+
+我国同学，请参考[[https://github.com/cuichaox/dml/blob/dev/README.zh.org][中文说明]]
 
 * Install
 

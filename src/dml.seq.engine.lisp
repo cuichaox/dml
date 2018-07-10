@@ -10,7 +10,7 @@
              #:&loop
              #:*context-objects*
              #:*context-sequnce-attrs*)
-  (:documentation "doc"))
+  (:documentation "cairo2 engine for drawing sequence diagram."))
 
 (in-package :dml.seq.engine)
 
@@ -18,11 +18,15 @@
 (defparameter *context-message* nil)
 (defparameter *context-sequnce-attrs*
   `(:font-size 20
+    :font-face "Mono"
     :line-with 1.0
     :background-rgba (1.0 1.0 1.0 1.0)
-    :fore-normal-rgba (0.0 0.0 0.0 1.0)
-    :fore-dim-rgba (0.5 0.5 0.6 1.0)))
+    :foreground-rgba (0.0 0.0 0.0 1.0)))
 
+(defun dim-rgba (rgba)
+  (destructuring-bind (r g b a) rgba
+    (list r g b (* 0.5 a))))
+    
 ;;参数
 (defconstant +min-x-margin+ 10.0)
 (defconstant +inner-margin+ 8.0)
@@ -243,8 +247,7 @@
   (let ((ext (igw (get-text-extents name)))
         (small-margin (/ +inner-margin+ 3)))
     (save)
-    (apply #'set-source-rgba (getf *context-sequnce-attrs* :fore-dim-rgba))
-    ;(set-font-size (/ (getf *context-sequnce-attrs* :font-size) 1.6))
+    (apply #'set-source-rgba (dim-rgba (getf *context-sequnce-attrs* :foreground-rgba)))    
     (rectangle fx fy (- tx fx) (- ty fy))
     (stroke)
     (move-to (+ small-margin (- fx (text-x-bearing ext)))
@@ -295,7 +298,7 @@
 (defun draw-life-cycle-line (x fy ey bars)
   (let ((cy fy))
     (save)
-    (apply #'set-source-rgba (getf *context-sequnce-attrs* :fore-dim-rgba))
+    (apply #'set-source-rgba (dim-rgba (getf *context-sequnce-attrs* :foreground-rgba)))
     (dolist (bar bars)
       (draw-dash-line x cy x (car bar))
       (rectangle (- x +half-bar-width+) (car bar)
@@ -444,7 +447,7 @@
 (defmethod draw-dml-element ((msg guard-message))
   (progn
     (save)
-    (apply #'set-source-rgba (getf *context-sequnce-attrs* :fore-dim-rgba))
+    (apply #'set-source-rgba (dim-rgba (getf *context-sequnce-attrs* :foreground-rgba)))
     (draw-text-end-to (guard msg)
                       (- (get-x-by-index *context-grid* (1+ (left-side-index msg)))
                          +min-x-margin+)
@@ -487,11 +490,12 @@
          (*context* (create-context ps-surface)))         
     (fit-down *context-grid* (- grid-vsize 1) +min-y-margin+)
     (set-font-size (getf *context-sequnce-attrs* :font-size))
+    (select-font-face (getf *context-sequnce-attrs* :font-face) :normal :normal)
     (dock-all-to-grid)
     (ps-surface-set-size ps-surface (get-width *context-grid*) (get-height *context-grid*))
     (apply #'set-source-rgba (getf *context-sequnce-attrs* :background-rgba))
     (paint)
-    (apply #'set-source-rgba (getf *context-sequnce-attrs* :fore-normal-rgba))
+    (apply #'set-source-rgba (getf *context-sequnce-attrs* :foreground-rgba))
     (set-line-width (getf *context-sequnce-attrs* :line-with))
     (loop
        for obj in *context-objects*
