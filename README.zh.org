@@ -1,10 +1,6 @@
 * 介绍
 
-  DML 就是 Diagram Make Language for Common Lisp. 这个东西就是绘制UML图的领域专用语言(DSL). 为什么要搞这样一个东西？
-
-  第一，可能是因为没有找到合适我的UML绘制工具，我个人不太喜欢使用鼠标的拖拽的方式画图。在进行对象模型设计的时候，我觉得应该关注与设计本身，布局什么的应该是自动化的。我觉得可以尝试使用我习惯的方式（编码）与工具进行交流。 第二，通过设计一种专用的绘图语言，顺便可以锻炼一下我设计能力。我的设计目标是，无论是序列图还是类图，我都努力寻找最简单的描述形式，实现用最少的代码，绘制最复杂的图。
-
-  为什么要选择使用Common Lisp实现呢？ 第一，我很懒，我不想自己去实现一个编译器或解释器，所以我必须选择一门宿主语言，复用已有的解释器。第二，如果选择C/C++/JAVA语言, 我只能考虑实现一个绘图方法库，把语法规则限制在绘制方法调用上, 而依赖Common Lisp的语法可扩展性，我可以自由的设计语言了，只是我不得不接受使用S-Expression作为语言的基本形式。 
+  DML 就是 Diagram Make Language for Common Lisp. 这个东西就是绘制UML图的领域专用语言(DSL). 为什么要搞这样一个东西？ 第一，可能是因为没有找到合适我的UML绘制工具，我个人不太喜欢使用鼠标的拖拽的方式画图。在进行对象模型设计的时候，我觉得应该关注与设计本身，布局什么的应该是自动化的。我觉得可以尝试使用我习惯的方式（编码）与工具进行交流。 第二，通过设计一种专用的绘图语言，顺便可以锻炼一下我设计能力。我的设计目标是，无论是序列图还是类图，我都努力寻找最简单的描述形式，实现用最少的代码，绘制最复杂的图。为什么要选择使用Common Lisp实现呢？ 第一，我很懒，我不想自己去实现一个编译器或解释器，所以我必须选择一门宿主语言，复用已有的解释器。第二，如果选择C/C++/JAVA语言, 我只能考虑实现一个绘图方法库，把语法规则限制在绘制方法调用上, 而依赖Common Lisp的语法可扩展性，我可以自由的设计语言了，只是我不得不接受使用S-Expression作为语言的基本形式。 
 
 * 安装说明
 
@@ -108,7 +104,7 @@
 
    顺便说一下蛤，其实我个人，不推荐在序列图中表达太复杂的分支循环结构，一般只对主场景来说，需要表达最关键的判断循环逻辑，才用一下。太复杂的控制结构，应该使用UML中的活动图，或者传统的流程图来搞。用顺序图的目的，还是说明对象之间的分工协作关系。
 
-** 定义”节点-连线“图（类图/对象图/组件图/部署图等等）
+** 创建”节点-连线“图（类图/对象图/组件图/部署图等等）
 
    我的设计，是使用定义节点和连线的方式，定义一个”节点和连线的图“, 搞这种图，我可不想在绘制过程中，还关系具体的布局，如果输入坐标，次序什么的，那还不然用鼠标去拖动呢。所以，我必须根据关系自动布局。这可不是容易的工作，不过，既然有Graphiviz，以它这个为基础，作为底层的引擎，让它来搞定布局问题。使用dml-create-graph定义一个”节点-连线“图， 使用下面的格式：
 
@@ -223,7 +219,44 @@
 
    [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/coder-case.png][file:demo/coder-case.png]] 
 
-   最后再来个，复杂一点的，这是一个在实际的项目中使用到类图，此图说明，自动布局算法可以信任。
+   再来一个用例图,这个例子显示了对中文的支持。
+
+#+BEGIN_SRC lisp
+(dml-create-graph "customer" (:rankdir :LR)
+  (-point-* (actor "客户")
+       (ucas "添加案例")       
+       (ucas "浏览历史案例"))
+  (-genby-* (@name "添加案例")
+            (ucas "创建新案例")
+            (ucas "复制旧案例"))
+  (-dep- "extend"
+         (ucas "下载/邮寄PDF(案例报价)")
+         (ucas "查看报价结果"))
+  (-dep- "extend"
+         (@name "复制旧案例")
+         (@name "浏览历史案例"))
+  (-dep- "extend"
+         (@name "查看报价结果")
+         (@name "浏览历史案例"))
+  (-dep- "extend"
+         (ucas "删除案例")
+         (@name "浏览历史案例"))
+  (-dep- "include"
+         (@name "添加案例")
+         (@name "查看报价结果"))
+  (-dep-- "include"
+          (@name "添加案例")
+          (ucas "录入方案")
+          (ucas "录入人员信息"))          
+  (-genby-* (@name "录入人员信息")
+            (ucas "输入总人数")
+            (ucas "输入各个年龄段人数")
+            (ucas "导入人员明细")))
+#+END_SRC lisp
+
+   [[https://raw.githubusercontent.com/cuichaox/dml/dev/demo/customer.png][file:demo/customer.png]] 
+
+   最后再来个，复杂的类图，这是一个在实际的项目中使用到类图，此图说明，自动布局算法可以信任。
 
 #+BEGIN_SRC lisp
 (dml-create-graph "dom" ()
@@ -281,7 +314,7 @@
            (pack "JDBC"))))
 #+END_SRC 
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/dev/demo/coder-case.png][file:demo/dom.png]] 
+   [[https://raw.githubusercontent.com/cuichaox/dml/dev/demo/dom.png][file:demo/dom.png]] 
 
 * DML所有符号说明 
 
