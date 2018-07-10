@@ -30,7 +30,8 @@
              #:-agg-*
              #:-dep-
              #:-dep-*
-             #:->>
+             #:-point-
+             #:-point-*
              #:-tree
              #:-dep--))
 

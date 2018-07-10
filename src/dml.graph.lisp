@@ -24,7 +24,8 @@
             #:-agg-
             #:-agg-*
             #:-dep-
-            #:->>
+            #:-point-
+            #:-point-*
             #:-tree
             #:-dep-*
             #:-dep--))
@@ -185,3 +186,10 @@
         (subcalls (loop for son in children
                     when (consp son) collect (push '-tree son))))
     `(&& (->> ,parent ,@sons) ,@subcalls)))
+
+;;定义一个箭头
+(defun -point- (node1 node2)
+  (-> node1 node2))
+
+(defun -point-* (&rest nodes)
+  (apply #'->> nodes))

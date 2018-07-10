@@ -26,7 +26,7 @@
            (@name"Linux"))))
 
 (dml-create-graph "coder-case" (:rankdir :LR)
-  (->> (actor "coder")
+  (-point-* (actor "coder")
        (ucas "Use Emacs")
        (ucas "Programing")
        (ucas "Play game"))
@@ -35,7 +35,7 @@
          (@name "Use Emacs")))
 
 (dml-create-graph "customer" (:rankdir :LR)
-  (->> (actor "客户")
+  (-point-* (actor "客户")
        (ucas "添加案例")       
        (ucas "浏览历史案例"))
   (-genby-* (@name "添加案例")

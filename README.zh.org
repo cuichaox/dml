@@ -2,13 +2,18 @@
 
 DML 就是 Diagram Make Language for Common Lisp. 
 这个东西就是绘制UML图的领域专用语言(DSL). 为什么要搞这样一个东西？
+
 第一，可能是因为没有找到合适我的UML绘制工具，我个人不太喜欢使用鼠标的拖拽的方式画图。
 在进行对象模型设计的时候，我觉得应该关注与设计本身，布局什么的应该是自动化的。
 我觉得可以尝试使用我习惯的方式（编码）与工具进行交流。
+
 第二，通过设计一种专用的绘图语言，顺便可以锻炼一下我设计能力。
 无论是序列图还是类图，我都努力寻找最简单的描述形式，实现用最少的代码，绘制最复杂的图。
+
 为什么要选择使用Common Lisp实现呢？
+
 第一，我很懒，我不想自己去实现一个编译器或解释器，所以我必须选择一门宿主语言，复用已有的解释器。
+
 第二，如果选择C/C++/JAVA语言, 我只能考虑实现一个绘图方法库,而依赖Common Lisp的语法可扩展性，
 我可以自由的设计语言了，只是我不得不接受使用S-Expression作为语言的基本形式。
  
@@ -33,21 +38,31 @@ DML 就是 Diagram Make Language for Common Lisp.
 ** 创建序列图
 
 调用宏dml-create-sequence，创建一个序列图， 只要按照从上到下顺序，指定消息序列。
-为了偷懒，我这里使用了一个格式的字符串定义一个消息。
+
+   (dml-create-sequence "<图形名称>" (<图形属性>...) <消息定义>)
 
 
- 1. A synchronous message & retrun in a formated string : '==>' <object name> '.' <message label> '/' <return label>
- 2. A asynchronous message in a formated string: '-->' <object name> '.' <message label>
- 3. A new message in a fromated string : 'n->' <object> '.' <object name > '.' <mesasge label>
- 4. Any object name begin with '!' is a active object
- 5. A sequence list of messages in macro '&prog'
- 6. A message with follwing sub-messages in mcaro '&chain'
- 7. A optional/alternative frame with guard condtion and  messages in macro '&opt' or '&if'
- 8. A loop frame with guard and message in macro '&loop'
- 9. Any macro ('&prog' ,'&chain', '&opt', '&if' and '&loop') can be nested
+为了偷懒，我这里使用了一个格式的字符串定义一个消息。消息字符串的格式为
 
-*** Examples of Sequence Diagram
+   "<消息类型前缀><接收消息的对象>.<调用消息名称>[/<返回消息的名称>]"
 
+消息类型前缀就是一个箭头： 同步消息使用'==>' 异步消息使用'-->', 新建对象的消息就是'n->' (对新建消息，我其实没有找到合适的象形符合)。
+
+定义消息的时候，不需要指定发起消息的对象，dml会自动根据上下文判断，对象也不需要先定义，
+直接在消息中指定接受消息的对象的名称，dml会自动安排布局（对象头和下面的生命线）。
+如果对象名称前面有个感叹号‘！’，说明这个对象是活动对象。这个对象的生命线上，将有一个贯彻始终的活动条。
+
+可以在消息定义字符串的最后，在斜杠‘/’后面，指定对应的返回消息名称，返回消息的发起对象和接收对象，都会自动判断。
+
+如果想定义连续执行的多个消息，需要使用宏'&prog',如下面的格式
+
+   (&prog  <消息1>  <消息2> ...  ) ; 执行消息1并返回，执行消息2并返回
+
+使用宏‘&chain', 可以定义连续的父子消息, 在父消息的执行过程中，调用子消息。
+
+   (&chain <父消息> <子消息> <孙消息> ...); 一个消息在后代返回后才能返回
+
+&prog, &chain 能互相嵌套，如下面的例子： 两个消息的序列，第二个消息又是三层的子消息嵌套
 
 #+BEGIN_SRC lisp
 (dml-create-sequence "legend" ()
@@ -57,12 +72,12 @@ DML 就是 Diagram Make Language for Common Lisp.
                  "-->!ActiveObjectC.AsyMesg2.2()")))
 #+END_SRC
 
-Will output image:
+计算上面的表达式，就会根据指定的图形名称"legend" 生成两个文件,矢量格式"legend.ps"和位图格式的"legend.png".
 
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/legend.png][file:demo/legend.png]] 
 
 
-Evalate Expression:
+下面是一个更复杂的嵌套结构。描述的是，我使用emacs编写Common Lisp程序的场景。
 
 #+BEGIN_SRC lisp
 (dml-create-sequence "nested" ()
@@ -75,11 +90,14 @@ Evalate Expression:
                                         "==>chrome:Explorer.OpenSpec()/"))))))
 #+END_SRC
 
-Will output image:
 
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/nested.png][file:demo/nested.png]] 
 
-Evalate Expression:
+我发现竟然许多人不知道，在UML序列图中，是可以支持分支和循环的。使用下面的格式定义分支消息。
+
+   (&if "<条件>" <条件成立时执行的消息> [<条件不成立时执行的消息>])
+
+同样可定义循环。
 
 #+BEGIN_SRC lisp
 (dml-create-sequence "control" ()
@@ -95,16 +113,46 @@ Will output image:
 
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/control.png][file:demo/control.png]] 
 
-** Quick Start for Graph Diargam
+顺便说一下蛤，其实我个人，也不推荐在序列图中表达太复杂的分支循环结构，只对主场景来说，表达关键的判断循环逻辑。
+太复杂的控制结构，应该使用UML中的活动图，或者传统的流程图来搞。用顺序图的目的，还是说明对象之间的分工协作关系。
 
-1. Define Graph by edges that linked nodes. 
-2. Define nodes by functions ( name of node is the first argument ):'full-class', 'simp-class', 'actor', 'pack', 'ucas', 'comp' 
-3. Get Predefined node by name '@name'.
-4. Define edges by functions (two nodes is arguments): '-dep-', '-com-', '-agg-', '-gen-by-'.
 
-*** Examples of Graph Diagram
+** 定义”节点-连线“图（类图/对象图/组件图/部署图等等）
 
-Evalate expression:
+
+使用定义节点和连线的方式，定义一个”节点和连线的图“, 搞这种图，我可不想在绘制中制定图形的布局，
+所以，比较难的是自动布局的问题。本来打算像序列图一样，直接使用底层Cario2库来作为绘制引擎， 
+但我很懒，既然有Graphiviz，以它这个为基础，作为底层的引擎，让它来搞定布局问题。
+
+使用dml-create-graph定义一个”节点-连线“图， 使用下面的格式：
+
+    (dml-create-graph "<图像名称>" (<图像属性>...) <节点和连线定义>...)
+
+定义节点有很多函数，每钟函数定义一种类型的节点，一般有下面的格式
+
+    (<节点类型>  <节点名称> [<其他节点参数>])  
+
+所用支持的节点类型，请参考下面的符号说明，如：使用下面的格式定义一个组件节点：
+ 
+    (comp "<名称>")
+    
+定义连线，一般使用下面的格式:
+
+    (-连线类型- [连线原型标签]  <源节点>  <目标节点>)
+
+所有的连线类型，参考下面的符号说明，如，使用下面的格式定义一个原型为"use"的依赖关系：
+  
+    (-dep- "use"  <源节点> <目标节点>)
+
+为了方便，可以使用下面的格式直接定义一对多并联关系:
+    
+    (-连线类型-* <源节点> <目标节点1> <目标节点2> ...)
+
+同时，有时候，经常有把多个节点串在一起，使用下面的格式，定义一个串联关系：
+
+    (-连线类型-- <第一个节点> <第二个节点> <第三个节点 ... )
+
+使用上面的说明， 应该能看明白下面的代码，这是个组件图的定义：
 
 #+BEGIN_SRC lisp
 (dml-create-graph "dml-component" (:rankdir :LR)
@@ -115,13 +163,29 @@ Evalate expression:
 #+END_SRC
 
 
-Will output image:
+这个图说明了dml使用的底层的组件。
+其中的图形属性(:rankdir :LR) 说明布局方式是，从左到右的安装层次布局（如果不指定，默认为从上到下）。
+更多的图形属性，可以参考Graphviz。上面的代码计算后，生产矢量格式dml-commont.ps和位图格式的dml-component.png 
+
 
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml-component.png][file:demo/dml-component.png]] 
 
+定义一个完整的类，设计类的成员属性和成员方法，要麻烦一些。使用下面的格式
 
+    (full-calss "<类名称>" "<原型名称>" (attributes "成员" ...) (methods "成员") ... )
 
-Evalate expression:
+在定义一个类层次的时候，其中的多个类，经常有重复存在的共用方法，为了避免重复输入，可以使用with-method
+    
+    (with-method ("共用方法" ...)  <节点和连线定义>)
+
+在with-method宏内部，定义的类，自动会有包含共用方法。
+
+可以看到，我的风格不是：”先定义节点，然后在定义连线的时候，引用定义好的节点“。
+但是，一个节点难免会出现在多条线上，如果被定义多次，又就麻烦了。使用下面的格式，可以引用前面连线中，已经定义好的节点。
+
+    (@name ”<节点名称>“)
+
+参考下面的例子：
 #+BEGIN_SRC lisp
 (dml-create-graph "os-class" ()
   (with-method ("+ play () : Love" "+ work () : Hate")
@@ -139,32 +203,88 @@ Evalate expression:
            (@name"Linux"))))
 #+END_SRC
 
-Will output Image:
-
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/os-class.png][file:demo/os-class.png]] 
 
-Evalate expression:
+再来看一个用例图的例子，因为dml是基于donus的.
 
 #+BEGIN_SRC lisp
 (dml-create-graph "coder-case" (:rankdir :LR)
-  (->> (actor "coder")
-       (ucas "Use Emacs")
-       (ucas "Programing")
-       (ucas "Play game"))
+  (-point-* (actor "coder")
+            (ucas "Use Emacs")
+            (ucas "Programing")
+            (ucas "Play game"))
   (-dep- "extend"
          (@name "Programing")
          (@name "Use Emacs")))
 #+END_SRC lisp
 
-Will output Image:
-
 [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/coder-case.png][file:demo/coder-case.png]] 
 
+最后再来个，复杂一点的，在实际的项目中使用到的例子。
 
-* Reference 
+#+BEGIN_SRC lisp
+(dml-create-graph "dom" ()
+  (with-method ("+ calcPrice(): BigDecimal"
+                "+ toJson(): String"
+                "+ getValue(name:String) : Object")
+    (-genby-* (full-class "TreeNode"
+                          "Abstract"
+                          nil
+                          (methods "+ getParent(): TreeNode"
+                                   "+ addChild(:TreeNode)"))
+              (full-class "PriceCache" "Decorator"
+                          (attributes "- theNode : TreeNode"))
+              (full-class "Case")
+              (full-class "Plan")
+              (full-class "Categorization"
+                          nil
+                          (attributes "- fromAge : integer"
+                                      "- toAge : integer"
+                                      "- isSheBao : boolean"
+                                      "- count : integer"))))
+  (-dep- "Create"
+         (full-class "CaseBuilder"
+                     "Factory"
+                     nil (methods "+ parseJson(: String) : Case"))                                  
+         (@name "Case"))
+  (-agg- (@name "TreeNode")
+         (@name "TreeNode"))
+  (-com- (@name "PriceCache")
+         (@name "TreeNode"))
+  (-com- (@name "Case")
+         (@name "Plan"))
+  (-com- (@name "Plan")
+         (@name "Categorization"))  
+  (-dep- "Usage"
+         (@name "Categorization")
+         (full-class "Calculator"
+                     "Utility"
+                     nil
+                     (methods "+ calc(arg : TreeNode) : BigDecimal"
+                              "- log2db() :")))
+  
+  (with-method ("+ loadFromdb()"
+                "+ lookUp()")
+    (-com- (@name "Calculator")
+           (full-class "ArgumentTable"))
+    (-dep- "Call"
+           (@name "Calculator")
+           (@name "TreeNode"))  
+    (-genby-* (@name "ArgumentTable")
+              (full-class "ByAgeScope")
+              (full-class "ByAge")
+              (full-class "ByID"))
+    (-dep- "Usage" (@name "ArgumentTable")
+           (pack "JDBC"))))
+
+#+END_SRC 
+
+ [[https://raw.githubusercontent.com/cuichaox/dml/dev/demo/coder-case.png][file:demo/dom.png]] 
+
+* DML所有符号说明 
 
 
-** Symbol for Sequence Diagram
+** 序列图符号
 
 | Symbol name        | Type  | Description                                         |
 |--------------------+-------+-----------------------------------------------------|
@@ -174,9 +294,7 @@ Will output Image:
 | &if                | Macro | Define two alternative calls with a guard condition |
 | &loop              | Macro | Defile a call in a loop with a guard condition      |
 
-
-
-** Symbol for Graph Diagram
+** ”节点-连线“图的符号
 
  | Symbol name           | Type     | Description                                        |
  |-----------------------+----------+----------------------------------------------------|
@@ -190,7 +308,7 @@ Will output Image:
  | ucas                  | Function | Create use case node.                              |
  | comp                  | Function | Create component node                              |
  | @name                 | Function | Reference pre-defined node by name                 |
- | ->, ->>               | Function | Define a arrow edge: 1-to-1, 1-to-n                |
+ | -point-, -point-*     | Function | Define a arrow edge: 1-to-1, 1-to-n                |
  | -dep-, -dep-*, -dep-- | Function | Define dependcy edge: 1-to-1, 1-to-n, 1-by-1       |
  | -com-, com-*          | Function | Define composition edge: 1-to-1, 1-to-n            |
  | -agg-, -agg-*         | Function | Define a aggregation edge: 1-to-1, 1-to-n          |
