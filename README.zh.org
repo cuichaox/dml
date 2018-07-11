@@ -59,7 +59,7 @@
 
    计算上面的表达式，就会根据指定的图形名称"legend" 生成两个文件,postscript矢量格式"legend.ps"和位图格式的"legend.png". 使用ps2pdf工具，ps可以转换成pdf格式。
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/legend.png][file:demo/legend.png]] 
+   [[file:demo/legend.png]] 
 
    下面是一个更复杂的嵌套结构。描述的是，我使用emacs编写Common Lisp程序的场景。
 
@@ -74,7 +74,7 @@
                                         "==>chrome:Explorer.OpenSpec()/"))))))
    #+END_SRC
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/nested.png][file:demo/nested.png]] 
+   [[file:demo/nested.png]] 
 
    最近我才发现竟然许多人不知道，在UML序列图中，是可以支持分支和循环的。使用下面的格式定义分支消息。
    
@@ -100,7 +100,7 @@
                                     "==>manPool.register()/"))))))
     #+END_SRC
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/control.png][file:demo/control.png]] 
+   [[file:demo/control.png]] 
 
    顺便说一下蛤，其实我个人，不推荐在序列图中表达太复杂的分支循环结构，一般只对主场景来说，需要表达最关键的判断循环逻辑，才用一下。太复杂的控制结构，应该使用UML中的活动图，或者传统的流程图来搞。用顺序图的目的，还是说明对象之间的分工协作关系。
 
@@ -162,7 +162,7 @@
 
    这个组件图其实说明了dml使用的底层的组件。其中的图形属性(:rankdir :LR) 说明布局方式是，从左到右的安装层次布局（如果不指定，默认为从上到下）。更多的图形属性，可以参考Graphviz。上面的代码计算后，生产矢量格式dml-commont.ps和位图格式的dml-component.png 
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/dml-component.png][file:demo/dml-component.png]] 
+   [[file:demo/dml-component.png]] 
 
    定义一个完整的类，参数比较复杂一些，设计类的成员属性和成员方法，要麻烦一些。使用下面的格式
    
@@ -174,11 +174,11 @@
 
    #+BEGIN_EXAMPLE
    (with-method ("共用方法"...)  <节点和连线定义>)
-   #+END_EXAMPOLE
+   #+END_EXAMPLE
 
    在with-method宏内部，定义的类，自动会有包含共用方法。
 
-   可以看到，我的风格不是：”先定义节点，然后在定义连线的时候，引用定义好的节点“。但是，一个节点难免会出现在多条线上，如果被定义多次，又就麻烦了。使用下面的格式，可以引用前面连线中，已经定义好的节点。
+   可以看到，我喜欢的风格不是：”先定义节点，然后在定义连线的时候，引用定义好的节点“。但是，一个节点难免会出现在多条线上，如果被定义多次，又就麻烦了。使用下面的格式，可以引用前面连线中，已经定义好的节点。
 
    #+BEGIN_EXAMPLE
    (@name ”<节点名称>“)
@@ -202,7 +202,7 @@
            (@name"Linux"))))
 #+END_SRC
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/os-class.png][file:demo/os-class.png]] 
+   [[[file:demo/os-class.png]] 
 
    再来看一个用例图的例子..
 
@@ -217,7 +217,7 @@
          (@name "Use Emacs")))
 #+END_SRC lisp
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/master/demo/coder-case.png][file:demo/coder-case.png]] 
+   [[file:demo/coder-case.png]] 
 
    再来一个用例图,这个例子显示了对中文的支持。
 
@@ -254,7 +254,7 @@
             (ucas "导入人员明细")))
 #+END_SRC lisp
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/dev/demo/customer.png][file:demo/customer.png]] 
+   [[file:demo/customer.png]] 
 
    最后再来个，复杂的类图，这是一个在实际的项目中使用到类图，此图说明，自动布局算法可以信任。
 
@@ -314,7 +314,7 @@
            (pack "JDBC"))))
 #+END_SRC 
 
-   [[https://raw.githubusercontent.com/cuichaox/dml/dev/demo/dom.png][file:demo/dom.png]] 
+  [[file:demo/dom.png]] 
 
 * DML所有符号说明 
 
@@ -330,21 +330,21 @@
 
 ** ”节点-连线“图的符号
 
- | Symbol name           | Type     | Description                                        |
- |-----------------------+----------+----------------------------------------------------|
- | dml-create-graph      | Macro    | Dump graph diagram to ps and png file.             |
- | full-class            | Function | Create a class node whih attributes and methods.   |
- | attributes, methods   | Function | Define attribute/method list for the full-calss    |
- | simp-class            | Function | Return a class node with a simple name in the box. |
- | with-method           | Macro    | Create to define share methods for classes.        |
- | actor                 | Function | Create a stick man as actor.                       |
- | pack                  | Function | Create a package node.                             |
- | ucas                  | Function | Create use case node.                              |
- | comp                  | Function | Create component node                              |
- | @name                 | Function | Reference pre-defined node by name                 |
- | -point-, -point-*     | Function | Define a arrow edge: 1-to-1, 1-to-n                |
- | -dep-, -dep-*, -dep-- | Function | Define dependcy edge: 1-to-1, 1-to-n, 1-by-1       |
- | -com-, com-*          | Function | Define composition edge: 1-to-1, 1-to-n            |
- | -agg-, -agg-*         | Function | Define a aggregation edge: 1-to-1, 1-to-n          |
- | -genby-,genby-*       | Function | Define generalize edge: 1-to-1, 1-to-n             |
+ | Symbol name           | Type              | Description                                        |
+ |-----------------------+-------------------+----------------------------------------------------|
+ | dml-create-graph      | Macro             | Dump graph diagram to ps and png file.             |
+ | full-class            | Function-节点类型 | Create a class node whih attributes and methods.   |
+ | attributes, methods   | Function          | Define attribute/method list for the full-calss    |
+ | simp-class            | Function-节点类型 | Return a class node with a simple name in the box. |
+ | with-method           | Macro             | Create to define share methods for classes.        |
+ | actor                 | Function-节点类型 | Create a stick man as actor.                       |
+ | pack                  | Function-节点类型 | Create a package node.                             |
+ | ucas                  | Function-节点类型 | Create use case node.                              |
+ | comp                  | Function-节点类型 | Create component node                              |
+ | @name                 | Function          | Reference pre-defined node by name                 |
+ | -point-, -point-*     | Function-连线类型 | Define a arrow edge: 1-to-1, 1-to-n                |
+ | -dep-, -dep-*, -dep-- | Function-连线类型 | Define dependcy edge: 1-to-1, 1-to-n, 1-by-1       |
+ | -com-, com-*          | Function-连线类型 | Define composition edge: 1-to-1, 1-to-n            |
+ | -agg-, -agg-*         | Function-连线类型 | Define a aggregation edge: 1-to-1, 1-to-n          |
+ | -genby-,genby-*       | Function-连线类型 | Define generalize edge: 1-to-1, 1-to-n             |
 
