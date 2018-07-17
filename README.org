@@ -39,14 +39,14 @@ To run examples, load dml system and change current package to 'dml'.
 
  A new message in a fromated string :
  #+BEGIN_EXAMPLE 
- "n-><object>.<object name>.<mesasge label>"
+ "n-><object name>.<mesasge label>"
  #+END_EXAMPLE
 
  Any object name begin with '!' is a active object, that has a active bar at beginning.
  
  A sequence list of messages in macro '&prog'
  #+BEGIN_EXAMPLE
- (&prog <message1> <message2> <message3> ...)
+ (&prog <message 1> <message 2> <message 3> ...)
  #+END_EXAMPLE
    
  A message with follwing sub-messages in mcaro '&chain'
@@ -61,10 +61,10 @@ To run examples, load dml system and change current package to 'dml'.
 
  A loop frame with guard and message in macro '&loop'
  #+BEGIN_EXAMPLE
- (&loop "<gurad label(conditon)>" <message in loop>
+ (&loop "<gurad label(conditon)>" <message in loop> )
  #+END_EXAMPLE
 
- Any macro ('&prog' ,'&chain', '&opt', '&if' and '&loop') can be nested in each other
+ Any macro ('&prog' ,'&chain', '&opt', '&if' and '&loop') return a messages, so it can be nested in each other
 
  Evaluate follwing expression:
 
