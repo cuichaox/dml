@@ -28,7 +28,9 @@
             #:-point-*
             #:-tree
             #:-dep-*
-            #:-dep--))
+            #:-dep--
+            #:-a-call-
+            #:-s-call-))
            
 
 (in-package :dml.graph)
@@ -193,3 +195,10 @@
 
 (defun -point-* (&rest nodes)
   (apply #'->> nodes))
+
+;;定义调用
+(defun -s-call- (label node1 node2)
+  (-> node1 node2 :label label :arrowhead "open"))
+
+(defun -a-call- (label node1 node2)
+  (-> node1 node2 :label label :arrowhead "halfopen"))

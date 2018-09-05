@@ -33,7 +33,9 @@
              #:-point-
              #:-point-*
              #:-tree
-             #:-dep--))
+             #:-dep--
+             #:-s-call-
+             #:-a-call-))
 
 (in-package :dml)
 
