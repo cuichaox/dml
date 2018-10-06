@@ -2,7 +2,7 @@
 (defpackage :dml.seq.grid
   (:use :cl)
   (:export #:grid
-           #:fit-left           
+           #:fit-left
            #:fit-right
            #:fit-up
            #:fit-down
@@ -25,10 +25,10 @@
 (defmethod initialize-instance ((g grid) &key hsize vsize)
   (with-slots (h-lines v-lines) g
     (setf h-lines (make-array hsize))
-    (dotimes (i hsize) (setf (aref h-lines i) (cons 0 +min-x-gap+))) 
+    (dotimes (i hsize) (setf (aref h-lines i) (cons 0 +min-x-gap+)))
     (setf v-lines (make-array vsize))
     (dotimes (i vsize) (setf (aref v-lines i) (cons 0 +min-y-gap+)))))
-    
+
 
 (defmacro def-fit (name  acc-name slot-name)
   `(defun ,name (grid index space)
@@ -59,7 +59,7 @@
 (defun get-height (grid)
   (with-slots (v-lines) grid
     (get-total-space v-lines)))
-      
+
 (defun get-y-by-index (grid v-index)
   (with-slots (v-lines) grid
     (get-all-space-to v-lines v-index)))

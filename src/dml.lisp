@@ -1,4 +1,3 @@
-
 (uiop:define-package :dml
     (:mix #:dml.graph
           #:dml.seq.engine
@@ -19,7 +18,7 @@
              #:actor
              #:ucas
              #:pack
-             #:comp           
+             #:comp
              #:-genby-
              #:-genby-*
              #:-relby-
@@ -33,14 +32,16 @@
              #:-point-
              #:-point-*
              #:-tree
-             #:-dep--))
+             #:-dep--
+             #:-s-call-
+             #:-a-call-))
 
 (in-package :dml)
 
 (defmacro dml-create-graph (path-name-prefix (&rest graph-attrs) &body nodes-edges-graphs)
   "Dump graph diagram to files (ps & png)"
   `(let ((graph (& ,graph-attrs ,@nodes-edges-graphs)))
-     ($ (:outfile ,(concatenate 'string path-name-prefix ".ps") :show nil)                  
+     ($ (:outfile ,(concatenate 'string path-name-prefix ".ps") :show nil)
         graph)
      ($ (:outfile ,(concatenate 'string path-name-prefix ".png") :show nil)
         graph)))

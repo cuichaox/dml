@@ -1,16 +1,15 @@
 ;;;; example for sequnce diagram using
-(in-package :cl-user)
-(use-package :dml)
+(asdf:load-system :dml)
+(in-package :dml)
 
 (uiop:chdir (asdf:system-relative-pathname :dml "demo"))
 
 (dml-create-sequence "legend" ()
-  (&prog "==>ObjectA.SyncMsg1()/ret1" 
+  (&prog "==>ObjectA.SyncMsg1()/ret1"
          (&chain "==>ObjectA.SyncMsg2()/ret2"
                  "==>ObjectB.SyncMsg2.1()/ret2.1"
-                 "-->!ActiveObjectC.AsyMesg2.2()")))         
-         
-            
+                 "-->!ActiveObjectC.AsyMesg2.2()")))
+
 (dml-create-sequence "nested" ()
   (&chain "==>aComputer.play()/"
           (&prog (&chain "==>emacs.run()/"
@@ -25,7 +24,5 @@
           (&loop "[hasNext]"
                  (&prog "==>:PersonFile.readNext()/"
                         (&if "[Is Good Man]"
-                             (&prog "n=>aManObj.new"
-                                    "==>manPool.register()/"))))))
-
-
+                            (&prog "n=>aManObj.new"
+                                   "==>manPool.register()/"))))))

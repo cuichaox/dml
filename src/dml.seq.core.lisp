@@ -9,7 +9,7 @@
            #:name
            #:is-active
            #:message
-           #:messages           
+           #:messages
            #:label
            #:call-message
            #:from-object
@@ -60,7 +60,7 @@
   ((from-object :accessor from-object :initarg :from-object :initform nil)
    (to-object :accessor to-object :initarg :to-object :initform nil))
   (:documentation "Call to other."))
-  
+
 (defclass syn-call (call-message) ())
 (defclass asy-call (call-message) ())
 (defclass ret-call (call-message) ())
@@ -134,7 +134,7 @@
       (let* ((is-active (char=  #\! (char name 0)))
              (obj (make-instance 'object
                                  :name (if is-active (subseq name 1) name)
-                                 :is-active is-active)))                                 
+                                 :is-active is-active)))
         (alexandria:appendf *context-objects* (list obj))
         (values obj t))))
 
@@ -149,7 +149,7 @@
 (defun parse-message-director (sym)
   (cl-ppcre:register-groups-bind
       (type-ch obj-name msg-label ret-label)
-      ("(.+)>([^\./]+)\.([^/]+)(/.*)?" (if (stringp sym) sym (symbol-name sym)))      
+      ("(.+)>([^\./]+)\.([^/]+)(/.*)?" (if (stringp sym) sym (symbol-name sym)))
     (list  (elt type-ch 0)
            obj-name
            msg-label
@@ -169,7 +169,7 @@
         (if (typep call-msg 'new-call)
             (if (not existp)
                 (error (format nil "The name ~s is used by other." obj-name))
-                (setf (new-message to-obj) call-msg)))        
+                (setf (new-message to-obj) call-msg)))
         (values call-msg ret-msg)))))
 
 (defparameter *context-current-object* nil)
@@ -209,23 +209,28 @@
             `(let (($call ,first))
                (push-to $call (&chain ,@others)))))))
 
+(defmacro as-single-msg (msg)
+  (if (stringp msg)
+      `(&prog ,msg)
+      `,msg))
+
 (defmacro &opt (guard msg)
   `(make-instance 'opt-frame
                   :guard ,guard
-                  :the-message  (convert-to-message ,msg)))
+                  :the-message  (as-single-msg ,msg)))
 
 (defmacro &loop (guard msg)
   `(make-instance 'loop-frame
                   :guard ,guard
-                  :the-message (convert-to-message ,msg)))
+                  :the-message (as-single-msg ,msg)))
 
 (defmacro &if (guard if-msg &optional (else-msg nil))
   (if (null else-msg)
-      `(&opt ,guard (convert-to-message,if-msg))
+      `(&opt ,guard ,if-msg)
       `(make-instance 'alt-frame
                       :guard ,guard
-                      :the-message  (convert-to-message ,if-msg)
+                      :the-message  (as-single-msg ,if-msg)
                       :else-message (make-instance 'guard-message
                                                    :guard (concatenate 'string)
-                                                   :the-message (convert-to-message ,else-msg)))))
+                                                   :the-message (as-single-msg ,else-msg)))))
 
