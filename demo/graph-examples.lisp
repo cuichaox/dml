@@ -1,6 +1,7 @@
 ;;;; examples  for graph exampels
 
-(use-package :dml)
+(asdf:load-systems :dml)
+(in-package :dml)
 
 (uiop:chdir (asdf:system-relative-pathname :dml "demo"))
 
@@ -36,7 +37,7 @@
 
 (dml-create-graph "customer" (:rankdir :LR)
   (-point-* (actor "客户")
-       (ucas "添加案例")       
+       (ucas "添加案例")
        (ucas "浏览历史案例"))
   (-genby-* (@name "添加案例")
             (ucas "创建新案例")
@@ -59,12 +60,12 @@
   (-dep-- "include"
           (@name "添加案例")
           (ucas "录入方案")
-          (ucas "录入人员信息"))          
+          (ucas "录入人员信息"))
   (-genby-* (@name "录入人员信息")
             (ucas "输入总人数")
             (ucas "输入各个年龄段人数")
-            (ucas "导入人员明细")))         
-           
+            (ucas "导入人员明细")))
+
 (dml-create-graph "dom" ()
   (with-method ("+ calcPrice(): BigDecimal"
                 "+ toJson(): String"
@@ -87,7 +88,7 @@
   (-dep- "Create"
          (full-class "CaseBuilder"
                      "Factory"
-                     nil (methods "+ parseJson(: String) : Case"))                                  
+                     nil (methods "+ parseJson(: String) : Case"))
          (@name "Case"))
   (-agg- (@name "TreeNode")
          (@name "TreeNode"))
@@ -96,7 +97,7 @@
   (-com- (@name "Case")
          (@name "Plan"))
   (-com- (@name "Plan")
-         (@name "Categorization"))  
+         (@name "Categorization"))
   (-dep- "Usage"
          (@name "Categorization")
          (full-class "Calculator"
@@ -104,14 +105,14 @@
                      nil
                      (methods "+ calc(arg : TreeNode) : BigDecimal"
                               "- log2db() :")))
-  
+
   (with-method ("+ loadFromdb()"
                 "+ lookUp()")
     (-com- (@name "Calculator")
            (full-class "ArgumentTable"))
     (-dep- "Call"
            (@name "Calculator")
-           (@name "TreeNode"))  
+           (@name "TreeNode"))
     (-genby-* (@name "ArgumentTable")
               (full-class "ByAgeScope")
               (full-class "ByAge")
