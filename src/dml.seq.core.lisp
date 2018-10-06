@@ -9,7 +9,7 @@
            #:name
            #:is-active
            #:message
-           #:messages           
+           #:messages
            #:label
            #:call-message
            #:from-object
@@ -60,7 +60,7 @@
   ((from-object :accessor from-object :initarg :from-object :initform nil)
    (to-object :accessor to-object :initarg :to-object :initform nil))
   (:documentation "Call to other."))
-  
+
 (defclass syn-call (call-message) ())
 (defclass asy-call (call-message) ())
 (defclass ret-call (call-message) ())
@@ -134,7 +134,7 @@
       (let* ((is-active (char=  #\! (char name 0)))
              (obj (make-instance 'object
                                  :name (if is-active (subseq name 1) name)
-                                 :is-active is-active)))                                 
+                                 :is-active is-active)))
         (alexandria:appendf *context-objects* (list obj))
         (values obj t))))
 
@@ -149,7 +149,7 @@
 (defun parse-message-director (sym)
   (cl-ppcre:register-groups-bind
       (type-ch obj-name msg-label ret-label)
-      ("(.+)>([^\./]+)\.([^/]+)(/.*)?" (if (stringp sym) sym (symbol-name sym)))      
+      ("(.+)>([^\./]+)\.([^/]+)(/.*)?" (if (stringp sym) sym (symbol-name sym)))
     (list  (elt type-ch 0)
            obj-name
            msg-label
@@ -169,7 +169,7 @@
         (if (typep call-msg 'new-call)
             (if (not existp)
                 (error (format nil "The name ~s is used by other." obj-name))
-                (setf (new-message to-obj) call-msg)))        
+                (setf (new-message to-obj) call-msg)))
         (values call-msg ret-msg)))))
 
 (defparameter *context-current-object* nil)

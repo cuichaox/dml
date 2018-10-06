@@ -14,7 +14,7 @@
             #:actor
             #:ucas
             #:pack
-            #:comp           
+            #:comp
             #:-genby-
             #:-genby-*
             #:-relby-
@@ -31,7 +31,7 @@
             #:-dep--
             #:-a-call-
             #:-s-call-))
-           
+
 
 (in-package :dml.graph)
 
@@ -45,7 +45,7 @@
 ;;原型标签
 (defun prototype-label (prototype)
   (if (null prototype) ""
-      (concatenate 'string "\\<\\<" prototype "\\>\\>"))) 
+      (concatenate 'string "\\<\\<" prototype "\\>\\>")))
 
 ;;拼接可能的原型
 (defun class-name-label (name prototype)
@@ -120,7 +120,7 @@
   (reg-node name
             (<> name :shape "circle" :size 0.1 :labelloc "b")))
 
-;;被继承   
+;;被继承
 (defun -genby- (node1 node2)
   (-> node1 node2 :dir "back" :arrowtail "empty" :arrowsize 2.0))
 
@@ -165,7 +165,7 @@
 (defun -dep-* (prototype orgion-node &rest nodes)
   (let ((in-donuts::*with-edge-context*
          (append in-donuts::*with-edge-context*
-                 (list :label (prototype-label prototype)))))   
+                 (list :label (prototype-label prototype)))))
     (with-edge (:style "dashed" :arrowhead "open")
       (apply #'->> orgion-node nodes))))
 
@@ -173,7 +173,7 @@
 (defun -dep-- (prototype orgion-node &rest nodes)
   (let ((in-donuts::*with-edge-context*
          (append in-donuts::*with-edge-context*
-                 (list :label (prototype-label prototype)))))   
+                 (list :label (prototype-label prototype)))))
     (with-edge (:style "dashed" :arrowhead "open")
       (apply #'--> orgion-node nodes))))
 

@@ -26,7 +26,7 @@
 (defun dim-rgba (rgba)
   (destructuring-bind (r g b a) rgba
     (list r g b (* 0.5 a))))
-    
+
 ;;参数
 (defconstant +min-x-margin+ 10.0)
 (defconstant +inner-margin+ 8.0)
@@ -45,7 +45,7 @@
 (defun get-call-v-index (msg)
   (+ 1 (position msg (all-call-messages *context-message*))))
 
-(defun get-caller-phases (obj)  
+(defun get-caller-phases (obj) 
  (let ((ret nil))
    (reverse (dolist (caller (callers obj) ret)
               (push (cons (get-call-v-index (car caller))
@@ -80,7 +80,7 @@
 (defun get-object-h-index (obj)
   (or (position obj *context-objects*)
       -1))
-   
+
 (defun get-object-v-index (obj)
   (let ((newby (new-message obj)))
     (if newby (get-call-v-index newby) 0)))
@@ -113,7 +113,7 @@
     (+ (* 1.2 +min-y-margin+) (text-height label-ext))))
 
 (defmethod up-extra-space ((msg new-call))
-  (max (call-next-method)       
+  (max (call-next-method)
        (+ (* 1.2 +min-y-margin+)
           (cdr (object-header-half-space (to-object msg))))))
 
@@ -196,14 +196,14 @@
                    (text-width label-ext)))
          (height (+ (* 2 +min-y-margin+)
                     (text-height label-ext))))
-    (if (null (from-object msg))            
+    (if (null (from-object msg))
         (fit-left *context-grid*
                   (get-object-h-index (to-object msg))
                   width)
         (if (null (to-object msg))
             (fit-left *context-grid*
                       (get-object-h-index (from-object msg))
-                      width)  
+                      width)
             (if (call-to-right-p msg)
                 (fit-right *context-grid*
                            (get-object-h-index (from-object msg))
@@ -214,7 +214,7 @@
     (fit-up *context-grid*
             (get-call-v-index msg)
             height)))
-                     
+
 (defmethod fit-to-grid ((msg message))
   (loop
      for call in (all-call-messages msg)
@@ -233,7 +233,7 @@
                (+ (* 2 +min-x-margin+)
                   (* 2 +half-bar-width+)
                   (text-width (igw (get-text-extents (guard msg))))))
-    (fit-to-grid (the-message msg))))         
+    (fit-to-grid (the-message msg))))
 
 (defmethod fit-to-grid((msg frame-guard))
   (progn
@@ -247,7 +247,7 @@
   (let ((ext (igw (get-text-extents name)))
         (small-margin (/ +inner-margin+ 3)))
     (save)
-    (apply #'set-source-rgba (dim-rgba (getf *context-sequnce-attrs* :foreground-rgba)))    
+    (apply #'set-source-rgba (dim-rgba (getf *context-sequnce-attrs* :foreground-rgba)))
     (rectangle fx fy (- tx fx) (- ty fy))
     (stroke)
     (move-to (+ small-margin (- fx (text-x-bearing ext)))
@@ -271,29 +271,28 @@
 (defun draw-text-end-to (text x y)
   (let ((ext (igw (get-text-extents text))))
     (move-to (- x (+ (text-x-bearing ext) (text-width ext)))
-             (- y (+ (text-y-bearing ext) (text-height ext))))             
+             (- y (+ (text-y-bearing ext) (text-height ext))))
     (show-text text)))
 
 ;;以指定中心绘制文本
-(defun draw-text-center-at (text x y &optional (box t)) 
+(defun draw-text-center-at (text x y &optional (box t))
   (let ((ext (igw (get-text-extents text))))
     (move-to (- x (+  (text-x-bearing ext) (/ (text-width ext) 2)))
-             (- y (+  (text-y-bearing ext) (/ (text-height ext) 2))))             
+             (- y (+  (text-y-bearing ext) (/ (text-height ext) 2))))
     (show-text text)
     (when box (rectangle (- x +inner-margin+ (/ (text-width ext) 2))
                          (- y +inner-margin+ (/ (text-height ext) 2))
                          (+ (* 2 +inner-margin+) (text-width ext))
                          (+ (* 2 +inner-margin+) (text-height ext)))
           (stroke))))
-;;绘制虚线                  
+;;绘制虚线
 (defun draw-dash-line (fx fy tx ty)
   (save)
-  (set-dash 0.0 '(8.0 2.0 4.0 2.0))  
+  (set-dash 0.0 '(8.0 2.0 4.0 2.0))
   (move-to fx fy)
   (line-to tx ty)
   (stroke)
   (restore))
-  
 
 (defun draw-life-cycle-line (x fy ey bars)
   (let ((cy fy))
@@ -311,25 +310,25 @@
 ;;绘制不同类型的箭头
 (defun draw-arraw-cap-line-left (fx fy tx ty)
   (let ((width 12)
-        (height 8))         
+        (height 8))
     (progn (save)
            (translate tx ty)
            (rotate (phase (complex (- tx fx)
                                    (- ty fy))))
            (set-dash 0.0 '())
-           (move-to 0 0) (line-to (* -1 width) height)           
+           (move-to 0 0) (line-to (* -1 width) height)
            (stroke)
            (restore))))
 
 (defun draw-arraw-cap-line-right (fx fy tx ty)
   (let ((width 12)
-        (height 8))         
+        (height 8))
     (progn (save)
            (translate tx ty)
            (rotate (phase (complex (- tx fx)
                                    (- ty fy))))
            (set-dash 0.0 '())
-           (move-to 0 0) (line-to (* -1 width) (* -1 height))           
+           (move-to 0 0) (line-to (* -1 width) (* -1 height))
            (stroke)
            (restore))))
 
@@ -337,12 +336,12 @@
   (if (> fx tx)
       (draw-arraw-cap-line-left fx fy tx ty)
       (draw-arraw-cap-line-right fx fy tx ty)))
-  
+
 
 
 (defun draw-arraw-cap-line-full (fx fy tx ty)
   (let ((width 10)
-        (height 5))         
+        (height 5)) 
     (progn (save)
            (translate tx ty)
            (rotate (phase (complex (- tx fx)
@@ -355,11 +354,11 @@
 
 (defun draw-arraw-cap-tri (fx fy tx ty)
   (let ((width 8)
-        (height 4))         
+        (height 4))
     (progn (save)
            (translate tx ty)
            (rotate (phase (complex (- tx fx)
-                                   (- ty fy))))           
+                                   (- ty fy))))
            (move-to 0 0)
            (line-to (* -1 width) height)
            (line-to (* -1 width) (* -1 height))
@@ -372,7 +371,7 @@
   (cond ((or (typep msg 'syn-call) (typep msg 'ret-call)) (draw-arraw-cap-tri fx fy tx ty))
         ((typep msg 'asy-call) (draw-arraw-cap-line-upside fx fy tx ty))
         (t (draw-arraw-cap-line-full fx fy tx ty))))
-          
+
 
 (defmethod draw-dml-element ((obj object))
   (let* ((hline (get-object-h-index obj))
@@ -391,9 +390,9 @@
   (let* ((from-obj (from-object msg))
          (to-obj (to-object msg))
          (from-x (if (null from-obj)
-                     (+  +min-x-margin+ (get-x-by-index *context-grid* (- (get-object-h-index to-obj) 1)))                        
+                     (+  +min-x-margin+ (get-x-by-index *context-grid* (- (get-object-h-index to-obj) 1)))
                      (get-x-by-index *context-grid* (get-object-h-index from-obj))))
-         (from-y (get-y-by-index *context-grid* (get-call-v-index msg)))         
+         (from-y (get-y-by-index *context-grid* (get-call-v-index msg)))
          (to-x (if (null to-obj)
                    (+  +min-x-margin+ (get-x-by-index *context-grid* (- (get-object-h-index from-obj) 1)))
                    (get-x-by-index *context-grid* (get-object-h-index to-obj))))
@@ -405,7 +404,7 @@
                                 (car (object-header-half-space to-obj))
                                 +half-bar-width+))
          (fx-offset (if to-right +half-bar-width+ (* -1 +half-bar-width+)))
-         (tx-offset (if to-right (* -1 object-half-space) object-half-space)))         
+         (tx-offset (if to-right (* -1 object-half-space) object-half-space)))
     (progn (incf from-x fx-offset)
            (incf to-x tx-offset)
            (move-to from-x from-y)
@@ -456,8 +455,6 @@
                          (text-height (igw (get-text-extents (guard msg))))))
     (restore)
     (draw-dml-element (the-message msg))))
-    
-                           
 
 (defmethod draw-dml-element ((msg frame-guard))
   (let* ((up-space (up-extra-space msg))
@@ -469,9 +466,9 @@
          (fy (- (get-y-by-index *context-grid* (up-side-index msg))
                 up-space))
          (ty (+ (get-y-by-index *context-grid* (down-side-index msg))
-                +min-y-margin+)))    
+                +min-y-margin+)))
     (draw-frame (label msg) fx fy tx ty)
-    (call-next-method)))   
+    (call-next-method)))
 
 (defun dock-all-to-grid()
   (progn
@@ -487,7 +484,7 @@
          (grid-vsize (+ 1 (length (all-call-messages *context-message*))))
          (*context-grid* (make-instance 'grid :hsize grid-hsize :vsize grid-vsize))
          (ps-surface (create-ps-surface (concatenate 'string name ".ps") 200 200))
-         (*context* (create-context ps-surface)))         
+         (*context* (create-context ps-surface)))
     (fit-down *context-grid* (- grid-vsize 1) +min-y-margin+)
     (set-font-size (getf *context-sequnce-attrs* :font-size))
     (select-font-face (getf *context-sequnce-attrs* :font-face) :normal :normal)
@@ -499,10 +496,10 @@
     (set-line-width (getf *context-sequnce-attrs* :line-with))
     (loop
        for obj in *context-objects*
-       do (draw-dml-element obj))    
+       do (draw-dml-element obj))
     (draw-dml-element msg)
-    (surface-write-to-png ps-surface (concatenate 'string name ".png"))    
-    (destroy ps-surface)        
+    (surface-write-to-png ps-surface (concatenate 'string name ".png"))
+    (destroy ps-surface)
     (setf *context-objects* nil)
-    (destroy *context*)))    
+    (destroy *context*)))
 
