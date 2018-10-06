@@ -209,23 +209,28 @@
             `(let (($call ,first))
                (push-to $call (&chain ,@others)))))))
 
+(defmacro as-single-msg (msg)
+  (if (stringp msg)
+      `(&prog ,msg)
+      `,msg))
+
 (defmacro &opt (guard msg)
   `(make-instance 'opt-frame
                   :guard ,guard
-                  :the-message  (convert-to-message ,msg)))
+                  :the-message  (as-single-msg ,msg)))
 
 (defmacro &loop (guard msg)
   `(make-instance 'loop-frame
                   :guard ,guard
-                  :the-message (convert-to-message ,msg)))
+                  :the-message (as-single-msg ,msg)))
 
 (defmacro &if (guard if-msg &optional (else-msg nil))
   (if (null else-msg)
-      `(&opt ,guard (convert-to-message,if-msg))
+      `(&opt ,guard ,if-msg)
       `(make-instance 'alt-frame
                       :guard ,guard
-                      :the-message  (convert-to-message ,if-msg)
+                      :the-message  (as-single-msg ,if-msg)
                       :else-message (make-instance 'guard-message
                                                    :guard (concatenate 'string)
-                                                   :the-message (convert-to-message ,else-msg)))))
+                                                   :the-message (as-single-msg ,else-msg)))))
 

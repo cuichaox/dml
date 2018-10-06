@@ -26,5 +26,3 @@
                         (&if "[Is Good Man]"
                             (&prog "n=>aManObj.new"
                                    "==>manPool.register()/"))))))
-
-
