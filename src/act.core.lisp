@@ -7,8 +7,9 @@
 (in-package :act.core)
 
 (defclass act-node ()
-  ()
- (:documentation "Base class for activity node. "))
+  ((id :reader id
+       :initform (gensym)
+    (:documentation "Base class for activity node. "))))
 
 (defclass primative (act-node)
   ((name :reader name
