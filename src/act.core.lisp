@@ -6,25 +6,41 @@
 
 (in-package :act.core)
 
-(defclass act-node ()
+#|
+a tracer demo
+(defun tracer-demo (nstep  ; steps from beginning, 0
+                    offset ; offset from main-line - most top-left side line. 0
+                    node)
+  ())
+|#
+
+
+(defgeneric walk (node tracer &optional from-step from-offset)
+  (:documentation "Walk node, return max-steps, max-offsets"))
+
+(defclass act-node ((node))
   ((id :reader id
-       :initform (gensym)
-    (:documentation "Base class for activity node. "))))
+       :initform (gensym)))
+  (:documentation "Base class for activity node. "))
 
 (defclass primative (act-node)
   ((name :reader name
          :initarg name
          :type string
          :initform (error "Must supply a name for primative."))
-   (role :reader rols
+   (role :reader role
          :initarg role
          :type string
          :initform nil))
   (:documentation "A single process. "))
 
+(defmethod walk ((node primative) tracer &optional (from-step 0) (from-offset 0))
+  (progn (funcall tracer node from-step from-offset)
+         (list 1 1)))
+
 (defclass sequence-sructure (act-node)
   ((subnodes :reader subnodes
-             :type (vector act-node *)
+             :type list
              :initarg subnodes
              :initform (error "Must supply subnodes for sequnce-structure."))
    (label :reader label
@@ -33,9 +49,13 @@
           :initform nil))
   (:documentation "A Sequence Structure. "))
 
+(defmethod walk ((node sequence-sructure) tracer &optional (from-step 0) (from-offset 0))
+  (iter (for h )))
+
+
 (defclass condition/parallel-structure (act-node)
   ((cases :reader cases
-          :type (vector sequence *)
+          :type list
           :initarg cases
           :initform (error "Must supply cases for conditon/paraller structure."))
    (sub-type :reader sub-type
