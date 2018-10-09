@@ -8,17 +8,17 @@
 
 #|
 a tracer demo
-(defun tracer-demo (nstep  ; steps from beginning, 0
-                    offset ; offset from main-line - most top-left side line. 0
-                    node)
-  ())
+(defun tracer-demo (nstep))  ; steps from beginning, 0
+offset ; offset from main-line - most top-left side line. 0
+node
+()
 |#
 
 
 (defgeneric walk (node tracer &optional from-step from-offset)
   (:documentation "Walk node, return max-steps, max-offsets"))
 
-(defclass act-node ((node))
+(defclass act-node ()
   ((id :reader id
        :initform (gensym)))
   (:documentation "Base class for activity node. "))
@@ -50,17 +50,26 @@ a tracer demo
   (:documentation "A Sequence Structure. "))
 
 (defmethod walk ((node sequence-sructure) tracer &optional (from-step 0) (from-offset 0))
-  (iter (for h )))
-
+  (if (null (subnodes node))
+      (list 0 0)
+      (iter
+        (for subnode in (subnodes node))
+        (for (s o) = (funcall tracer
+                              subnode
+                              (+ from-step (if-first-time 0 total-s))
+                              from-offset))
+        (sum s into total-s)
+        (maximize o into max-o)
+        (finally (return (list total-s max-o))))))
 
 (defclass condition/parallel-structure (act-node)
-  ((cases :reader cases
-          :type list
-          :initarg cases
-          :initform (error "Must supply cases for conditon/paraller structure."))
-   (sub-type :reader sub-type
+  ((subcases :reader subcases
+             :type list
+             :initarg subcases
+             :initform (error "Must supply cases for conditon/paraller structure."))
+   (subtype :reader subtype
              :type symbol
-             :initarg sub-type
+             :initarg subtype
              :initform :condition))
   (:documentation "A Condition/paraller Structure. "))
 
@@ -72,6 +81,18 @@ a tracer demo
                    (thereis (null (label i)))))
             (error "sequence-structure as  cases in condition must have a label."))))
 
+(defmethod walk ((node condition/parallel-structure) tracer &optional (from-step 0) (from-offset 0))
+  (if (null (subcases node))
+      (list 0 0)
+      (iter (for subcase in (subcases node))
+        (for (s o) = (funcall tracer
+                              subcase
+                              from-step
+                              from-offset))
+        (maximize s into max-s)
+        (sum o to total-s)
+        (finally (return (list max-s total-s))))))
+
 (defclass loop-structure (act-node)
   ((forward-sequence :reader forward-sequence
                      :initarg forward-sequence
@@ -81,8 +102,11 @@ a tracer demo
                       :type sequence-structure))
   (:documentation "A Loop Structure. "))
 
+(defmethod walk )
+
 (defmethod initialize-instance :after ((l loop-structure) &key)
-  (when (and (null (forward-sequence l))
-             (null (backward-sequence l)))
-    (error "Must supply a forward or backward sequence for loop-structure.")))
+  (if (and (null (forward-sequence l))
+           (null (backward-sequence l)))
+      (error "Must supply a forward or backward sequence for loop-structure.")))
+
 
