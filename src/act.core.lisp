@@ -50,10 +50,14 @@ node
              :type list
              :initarg subnodes
              :initform (error "Must supply subnodes for sequnce-structure."))
-   (label :reader label
-          :initarg label
-          :type string
-          :initform nil)
+   (head-label :reader head-label
+               :initarg head-label
+               :type string
+               :initform nil)
+   (tail-label :reader tail-label
+               :initarg tail-label
+               :type string
+               :initform nil)
    (forwardp :reader forwardp
              :initarg forwardp
              :type boolean
@@ -61,9 +65,10 @@ node
   (:documentation "A Sequence Structure. "))
 
 (defmethod reverse-layout ((node sequence-sructure))
-  (with-slots (subnodes forwardp) node
+  (with-slots (subnodes forwardp head-label tail-label) node
     (setf subnodes (nreverse subnodes))
     (setf forwardp (not forwardp))
+    (rotatef head-label tail-label)
     node))
 
 (defmethod walk ((node sequence-sructure) tracer &optional (from-step 0) (from-offset 0))
@@ -81,7 +86,7 @@ node
 
 (defclass condition/parallel-structure (act-node)
   ((subcases :reader subcases
-             :type list
+             :type list ; alist of (label . node)
              :initarg subcases
              :initform (error "Must supply cases for conditon/paraller structure."))
    (subtype :reader subtype
@@ -146,9 +151,9 @@ node
 
 #|
 * Language to create node
-(go <label> <subnode>*)
-(back <label> <subnode>)
-(cond <sub seqs>)
-(loop (go <subndoe>*)
-      (back <subnode>*))
+(go-->  <subnode>*)
+(cond> (when <label> (:--> <subnode>*))*)
+(loop> :nutil <label> <subndoe>*
+       :back  <label> <subnode>*)
 |#
+
