@@ -4,7 +4,7 @@
     :name        "dml"
     :version     "0.1"
     :licence     "MIT License"
-    :author      "cuic@chianre.com.cn"
+    :author      "cuic@chinare.com.cn"
     :depends-on  (#:donuts #:cl-cairo2 #:alexandria #:cl-ppcre)
     :components  ((:file "src/dml.node")
                   (:file "src/dml.graph"
